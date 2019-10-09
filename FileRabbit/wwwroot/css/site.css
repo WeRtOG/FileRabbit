@@ -82,5 +82,5 @@ body {
     height: 100% !important;
 }
 body, html, .container, .pb-3 {
-    height: calc(100% - 30px);
+    height: calc(100% - 32px);
 }

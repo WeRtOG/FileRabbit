@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using System.Threading.Tasks;
 using FileRabbit.Models;
 using FileRabbit.ViewModels;
@@ -20,9 +21,11 @@ namespace FileRabbit.Controllers
             _signInManager = signInManager;
         }
 
+        #region Register
         [HttpGet]
         public IActionResult Register()
         {
+            // если пользователь уже авторизован, то регистрация ему не нужна - перенаправляем на главную страницу
             if (User.Identity.IsAuthenticated)
                 return RedirectToAction("Index", "Home");
             return View();
@@ -38,6 +41,9 @@ namespace FileRabbit.Controllers
                 var result = await _userManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
+                    // создаём папку нового пользователя в хранилище
+                    Directory.CreateDirectory("C://FileRabbitStore//" + user.Id);
+
                     // установка куки
                     await _signInManager.SignInAsync(user, false);
                     return RedirectToAction("Index", "Home");
@@ -52,11 +58,14 @@ namespace FileRabbit.Controllers
             }
             return View(model);
         }
+        #endregion
 
+        #region Login/Logoff
         [HttpGet]
         public IActionResult Login()
         {
-            if(User.Identity.IsAuthenticated)
+            // если пользователь уже авторизован, то регистрация ему не нужна - перенаправляем на главную страницу
+            if (User.Identity.IsAuthenticated)
                 return RedirectToAction("Index", "Home");
             return View();
         }
@@ -88,5 +97,6 @@ namespace FileRabbit.Controllers
             await _signInManager.SignOutAsync();
             return RedirectToAction("Index", "Home");
         }
+        #endregion
     }
 }

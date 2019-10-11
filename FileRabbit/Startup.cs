@@ -29,7 +29,15 @@ namespace FileRabbit
             services.AddDbContext<ApplicationContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
-            services.AddIdentity<User, IdentityRole>()
+            // определяем требования к паролю и имени пользователя
+            services.AddIdentity<User, IdentityRole>(opts => {
+                opts.Password.RequireNonAlphanumeric = false;
+                opts.Password.RequireLowercase = false;
+                opts.Password.RequireUppercase = false;
+                opts.Password.RequireDigit = false;
+                opts.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+ ";
+                opts.User.RequireUniqueEmail = true;
+            })
                 .AddEntityFrameworkStores<ApplicationContext>();
 
             services.AddMvc();

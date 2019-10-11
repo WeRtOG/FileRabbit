@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
@@ -13,6 +14,8 @@ namespace FileRabbit
     {
         public static void Main(string[] args)
         {
+            if (!Directory.Exists("C://FileRabbitStore"))
+                Directory.CreateDirectory("C://FileRabbitStore");
             CreateHostBuilder(args).Build().Run();
         }
 

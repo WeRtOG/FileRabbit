@@ -1,14 +1,15 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
 
 namespace FileRabbit.Models
 {
-    public class ApplicationContext : IdentityDbContext<User>
+    public class ApplicationContext : DbContext
     {
+        public DbSet<Folder> Folders { get; set; }
+
         public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
         {
             Database.EnsureCreated();

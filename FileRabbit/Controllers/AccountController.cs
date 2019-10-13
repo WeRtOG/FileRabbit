@@ -7,6 +7,7 @@ using FileRabbit.Models;
 using FileRabbit.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace FileRabbit.Controllers
 {
@@ -41,12 +42,11 @@ namespace FileRabbit.Controllers
                 var result = await _userManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
-                    // создаём папку нового пользователя в хранилище
-                    Directory.CreateDirectory("C://FileRabbitStore//" + user.Id);
-
                     // установка куки
                     await _signInManager.SignInAsync(user, false);
-                    return RedirectToAction("Index", "Home");
+                    return RedirectToAction("CreateNewUserFolder", "Folder", 
+                        new Folder { Id = user.Id, OwnerId = user.Id, 
+                            IsShared = false, Path = "C://FileRabbitStore//" + user.Id });
                 }
                 else
                 {
@@ -79,7 +79,12 @@ namespace FileRabbit.Controllers
                 var result = await _signInManager.PasswordSignInAsync(model.UserName, model.Password, model.Remember, false);
                 if (result.Succeeded)
                 {
-                    return RedirectToAction("Index", "Home");
+                    var user = await _userManager.FindByNameAsync(model.UserName);
+                    var userId = user.Id;
+                    if (userId != null)
+                        return RedirectToAction("Watch", "Folder", new { folderId = user.Id });
+                    else
+                        return RedirectToAction("Index", "Home");
                 }
                 else
                 {

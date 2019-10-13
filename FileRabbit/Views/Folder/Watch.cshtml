@@ -1,0 +1,62 @@
+﻿@{
+    ViewData["Title"] = "Watch";
+}
+
+@if (ViewBag.Empty == false)
+{
+    <h1 class="text-white">Your files</h1>
+    <table class="text-white table">
+        <tr>
+            <th></th>
+            <th>Name</th>
+            <th>Last change</th>
+            <th>Size</th>
+        </tr>
+        @foreach (var elem in ViewBag.Models)
+        {
+            <tr>
+                @switch(elem.Type.ToString())
+                {
+                    case "Document":
+                        <td><img src="~/img/file_document.png" class="navbar-toggler-icon"></td>
+                        break;
+                    case "Image":
+                        <td><img src="~/img/file_image.png" class="navbar-toggler-icon"></td>
+                        break;
+                    case "Video":
+                        <td><img src="~/img/file_video.png" class="navbar-toggler-icon"></td>
+                        break;
+                    case "Audio":
+                        <td><img src="~/img/file_music.png" class="navbar-toggler-icon"></td>
+                        break;
+                    case "Folder":
+                        <td><img src="~/img/folder.png" class="navbar-toggler-icon"></td>
+                        break;
+                    default:
+                        <td><img src="~/img/explorer.png" class="navbar-toggler-icon"></td>
+                        break;
+                }
+                <td>@elem.ElemName</td>
+                <td>@elem.LastModified</td>
+                @if (elem.Size == null)
+                {
+                    <td>-</td>
+                }
+                else
+                {
+                    <td>@elem.Size.Item1 @elem.Size.Item2</td>
+                }
+            </tr>
+        }
+    </table>
+}
+else
+{
+    <div class="text-center">
+        <div>
+            <p class="text-white display-4">Your folder is empty...</p>
+            <p class="text-white">Add new files to change it.</p>
+        </div>
+    </div>
+}
+

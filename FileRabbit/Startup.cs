@@ -26,8 +26,11 @@ namespace FileRabbit
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddDbContext<UserContext>(options =>
+                options.UseSqlServer(Configuration.GetConnectionString("UserConnection")));
+
             services.AddDbContext<ApplicationContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(Configuration.GetConnectionString("WebStoreConnection")));
 
             // определяем требования к паролю и имени пользователя
             services.AddIdentity<User, IdentityRole>(opts => {
@@ -38,7 +41,7 @@ namespace FileRabbit
                 opts.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+ ";
                 opts.User.RequireUniqueEmail = true;
             })
-                .AddEntityFrameworkStores<ApplicationContext>();
+                .AddEntityFrameworkStores<UserContext>();
 
             services.AddMvc();
             services.AddControllersWithViews();
@@ -59,7 +62,7 @@ namespace FileRabbit
 
             app.UseHttpsRedirection();
             app.UseRouting();
-            app.UseStatusCodePages("text/plain", "Error. Status code : {0}");
+            //app.UseStatusCodePages("text/plain", "Error. Status code : {0}");
             app.UseStaticFiles();
             app.UseAuthentication();
 

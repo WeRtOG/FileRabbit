@@ -7,5 +7,10 @@
         <img src="~/img/rabbit.svg" height="200" />
         <h1 class="display-4">Welcome to FileRabbit</h1>
         <p>A completely new way to store and share files.</p>
+        <form method="get" asp-controller="Folder" asp-action="Watch">
+            <input type="hidden" value="@ViewBag.UserId" name="folderId">
+            <input type="submit" value="Start working!" class="btn btn-primary" />
+        </form>
+        
     </div>
 </div>

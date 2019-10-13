@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using FileRabbit.Models;
+using System.Security.Claims;
 
 namespace FileRabbit.Controllers
 {
@@ -20,6 +21,7 @@ namespace FileRabbit.Controllers
 
         public IActionResult Index()
         {
+            ViewBag.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             return View();
         }
 

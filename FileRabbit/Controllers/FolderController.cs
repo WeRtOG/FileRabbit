@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using FileRabbit.Models;
 using FileRabbit.StaticClasses;
 using FileRabbit.ViewModels;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FileRabbit.Controllers
@@ -75,24 +76,52 @@ namespace FileRabbit.Controllers
             }
 
             ViewBag.Models = models;
-            //ViewBag.Files = files;
-            //ViewBag.Directories = dirs;
 
             if (files.Length == 0 && dirs.Length == 0)
                 ViewBag.Empty = true;
             else
                 ViewBag.Empty = false;
 
-            return View(models);
+            ViewBag.CurrFolderId = folderId;
+            return View();
         }
 
-        public async Task<IActionResult> CreateNewUserFolder(Folder folder)
+        public IActionResult CreateNewUserFolder(Folder folder)
         {
             // создаём папку нового пользователя в хранилище
             Directory.CreateDirectory(folder.Path);
             db.Folders.Add(folder);
-            await db.SaveChangesAsync();
-            return RedirectToAction("Watch", "Folder", folder.Id);
+            db.SaveChanges();
+            string folderId = folder.Id;
+            return RedirectToAction("Watch", "Folder", new { folderId });
+        }
+
+        [HttpPost]
+        [DisableRequestSizeLimit]
+        public async Task<IActionResult> Upload(IFormFileCollection uploads, string folderId)
+        {
+            Folder parentFolder = db.Folders.Find(folderId);
+            foreach (var uploadedFile in uploads)
+            {
+                string path = parentFolder.Path + "//" + uploadedFile.FileName;
+
+                using (var fileStream = new FileStream(path, FileMode.Create))
+                {
+                    await uploadedFile.CopyToAsync(fileStream);
+                }
+                Models.File file = new Models.File
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Path = path,
+                    IsShared = false,
+                    OwnerId = User.FindFirstValue(ClaimTypes.NameIdentifier),
+                    FolderId = folderId
+                };
+                db.Files.Add(file);
+            }
+            db.SaveChanges();
+
+            return RedirectToAction("Watch", "Folder", new { folderId });
         }
     }
 }

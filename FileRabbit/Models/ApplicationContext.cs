@@ -9,6 +9,7 @@ namespace FileRabbit.Models
     public class ApplicationContext : DbContext
     {
         public DbSet<Folder> Folders { get; set; }
+        public DbSet<File> Files { get; set; }
 
         public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
         {

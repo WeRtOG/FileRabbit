@@ -59,4 +59,9 @@ else
         </div>
     </div>
 }
+<form asp-action="Upload" asp-controller="Folder" method="post" enctype="multipart/form-data">
+    <input type="hidden" value="@ViewBag.CurrFolderId" name="folderId"/>
+    <input type="file" name="uploads" multiple="multiple"/>
+    <input type="submit" value="Загрузить" />
+</form>
 

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using FileRabbit.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -44,6 +45,11 @@ namespace FileRabbit
                 .AddEntityFrameworkStores<UserContext>();
 
             services.AddMvc();
+            services.Configure<FormOptions>(x =>
+            {
+                //x.ValueLengthLimit = int.MaxValue;
+                x.MultipartBodyLengthLimit = int.MaxValue; // In case of multipart
+            });
             services.AddControllersWithViews();
         }
 

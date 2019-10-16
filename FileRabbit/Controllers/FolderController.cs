@@ -109,19 +109,51 @@ namespace FileRabbit.Controllers
                 {
                     await uploadedFile.CopyToAsync(fileStream);
                 }
-                Models.File file = new Models.File
+
+                if (!System.IO.File.Exists(path))
                 {
-                    Id = Guid.NewGuid().ToString(),
-                    Path = path,
-                    IsShared = false,
-                    OwnerId = User.FindFirstValue(ClaimTypes.NameIdentifier),
-                    FolderId = folderId
-                };
-                db.Files.Add(file);
+                    Models.File file = new Models.File
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Path = path,
+                        IsShared = false,
+                        OwnerId = User.FindFirstValue(ClaimTypes.NameIdentifier),
+                        FolderId = folderId
+                    };
+                    db.Files.Add(file);
+                }
             }
             db.SaveChanges();
 
             return RedirectToAction("Watch", "Folder", new { folderId });
+        }
+
+        [HttpPost]
+        public IActionResult AddFolder(string folderId, string newFolderName)
+        {
+            Folder parentFolder = db.Folders.Find(folderId);
+            string newFolderPath = parentFolder.Path + "//" + newFolderName;
+            if (!Directory.Exists(newFolderPath))
+            {
+                Directory.CreateDirectory(newFolderPath);
+                Folder newFolder = new Folder
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Path = newFolderPath,
+                    IsShared = parentFolder.IsShared,
+                    OwnerId = User.FindFirstValue(ClaimTypes.NameIdentifier),
+                    ParentFolderId = folderId
+                };
+                db.Folders.Add(newFolder);
+                db.SaveChanges();
+
+                return RedirectToAction("Watch", "Folder", new { folderId });
+            }
+            else
+            {
+                ViewBag.ErrorMessage = "This folder already exists.";
+                return PartialView("_AddFolder");
+            }
         }
     }
 }

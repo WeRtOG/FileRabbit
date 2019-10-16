@@ -5,9 +5,12 @@ using System.Threading.Tasks;
 using FileRabbit.ViewModels;
 
 namespace FileRabbit.StaticClasses
-{
+{ 
     public static class ElementHelperClass
     {
+        private const int KyloBiteSize = 1024;
+        private const int MaxByteSize = 1000;
+
         private static List<string> docTypes = new List<string> { ".doc", ".docx", ".xls", ".docm", ".dot",
             ".dotm", ".epub", ".fb2", ".ibooks", ".indd", ".key", ".mobi", ".odt", ".pdf", ".pages", ".pps",
             ".ppsm", ".ppsx", ".ppt", ".pptm", ".pptx", ".pub", ".rtf", ".wpd", ".wps", ".xls", ".xlsb",
@@ -24,8 +27,8 @@ namespace FileRabbit.StaticClasses
 
         public static Tuple<double, ElementViewModel.Unit> Recount(Tuple<double, ElementViewModel.Unit> value)
         {
-            while(value.Item1 >= 1000)
-                value = new Tuple<double, ElementViewModel.Unit>(value.Item1 / 1024, value.Item2 + 1);
+            while(value.Item1 >= MaxByteSize)
+                value = new Tuple<double, ElementViewModel.Unit>(value.Item1 / KyloBiteSize, value.Item2 + 1);
 
             return new Tuple<double, ElementViewModel.Unit>(Math.Round(value.Item1, 1), value.Item2);
         }

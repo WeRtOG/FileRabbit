@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FileRabbit.DAL.Entites;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace FileRabbit.Models
+namespace FileRabbit.DAL.Contexts
 {
     public class UserContext : IdentityDbContext<User>
     {

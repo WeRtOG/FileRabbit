@@ -3,23 +3,27 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Threading.Tasks;
-using FileRabbit.Models;
-using FileRabbit.ViewModels;
+using FileRabbit.PL.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using FileRabbit.BLL.Interfaces;
+using AutoMapper;
+using FileRabbit.BLL.DTO;
 
-namespace FileRabbit.Controllers
+namespace FileRabbit.PL.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly UserManager<User> _userManager;
-        private readonly SignInManager<User> _signInManager;
+        private readonly IAuthorizationService authorizationService;
+        private readonly IFileSystemService fileSystemService;
+        private readonly IMapper mapper;
 
-        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager)
+        public AccountController(IAuthorizationService auth, IFileSystemService service, IMapper mapper)
         {
-            _userManager = userManager;
-            _signInManager = signInManager;
+            authorizationService = auth;
+            fileSystemService = service;
+            this.mapper = mapper;
         }
 
         #region Register
@@ -37,16 +41,21 @@ namespace FileRabbit.Controllers
         {
             if (ModelState.IsValid)
             {
-                User user = new User { Email = model.Email, UserName = model.UserName };
-                // добавляем пользователя
-                var result = await _userManager.CreateAsync(user, model.Password);
+                UserDTO user = new UserDTO 
+                { 
+                    Id = Guid.NewGuid().ToString(),
+                    Email = model.Email,
+                    UserName = model.UserName, 
+                    Password = model.Password 
+                };
+                var result = await authorizationService.CreateUser(user);
+
                 if (result.Succeeded)
                 {
-                    // установка куки
-                    await _signInManager.SignInAsync(user, false);
-                    return RedirectToAction("CreateNewUserFolder", "Folder", 
-                        new Folder { Id = user.Id, OwnerId = user.Id, 
-                            IsShared = false, Path = "C://FileRabbitStore//" + user.Id });
+                    await authorizationService.SignIn(user, false);
+                    fileSystemService.CreateFolder(user.Id);
+                    string folderId = user.Id;
+                    return RedirectToAction("Watch", "Folder", new { folderId });
                 }
                 else
                 {
@@ -76,10 +85,11 @@ namespace FileRabbit.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result = await _signInManager.PasswordSignInAsync(model.UserName, model.Password, model.Remember, false);
+                LoginDTO loginDTO = mapper.Map<LoginViewModel, LoginDTO>(model);
+                var result = await authorizationService.SignInWithPassword(loginDTO);
                 if (result.Succeeded)
                 {
-                    var user = await _userManager.FindByNameAsync(model.UserName);
+                    var user = await authorizationService.FindByName(model.UserName);
                     var userId = user.Id;
                     if (userId != null)
                         return RedirectToAction("Watch", "Folder", new { folderId = user.Id });
@@ -99,7 +109,7 @@ namespace FileRabbit.Controllers
         public async Task<IActionResult> LogOff()
         {
             // удаляем аутентификационные куки
-            await _signInManager.SignOutAsync();
+            await authorizationService.SignOut();
             return RedirectToAction("Index", "Home");
         }
         #endregion

@@ -1,6 +1,6 @@
 using System;
 
-namespace FileRabbit.Models
+namespace FileRabbit.PL.Models
 {
     public class ErrorViewModel
     {

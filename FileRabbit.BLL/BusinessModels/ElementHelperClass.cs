@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using FileRabbit.ViewModels;
 
-namespace FileRabbit.StaticClasses
+namespace FileRabbit.BLL.BusinessModels
 { 
     public static class ElementHelperClass
     {
@@ -25,29 +24,29 @@ namespace FileRabbit.StaticClasses
             ".jpeg", ".jpg", ".mng", ".msp", ".png", ".psd", ".pspimage", ".tga", ".thm", ".tif", ".tiff",
             ".xcf", ".ai", ".cdd", ".cdr", ".eps", ".ps", ".svg", ".vsd" };
 
-        public static Tuple<double, ElementViewModel.Unit> Recount(Tuple<double, ElementViewModel.Unit> value)
+        public static Tuple<double, ElementEnums.Unit> Recount(Tuple<double, ElementEnums.Unit> value)
         {
             while(value.Item1 >= MaxByteSize)
-                value = new Tuple<double, ElementViewModel.Unit>(value.Item1 / KyloBiteSize, value.Item2 + 1);
+                value = new Tuple<double, ElementEnums.Unit>(value.Item1 / KyloBiteSize, value.Item2 + 1);
 
-            return new Tuple<double, ElementViewModel.Unit>(Math.Round(value.Item1, 1), value.Item2);
+            return new Tuple<double, ElementEnums.Unit>(Math.Round(value.Item1, 1), value.Item2);
         }
 
-        public static ElementViewModel.FileType DefineFileType(string extension)
+        public static ElementEnums.FileType DefineFileType(string extension)
         {
             if (docTypes.Contains(extension))
-                return ElementViewModel.FileType.Document;
+                return ElementEnums.FileType.Document;
 
             if (imageTypes.Contains(extension))
-                return ElementViewModel.FileType.Image;
+                return ElementEnums.FileType.Image;
 
             if (videoTypes.Contains(extension))
-                return ElementViewModel.FileType.Video;
+                return ElementEnums.FileType.Video;
 
             if (audioTypes.Contains(extension))
-                return ElementViewModel.FileType.Audio;
+                return ElementEnums.FileType.Audio;
 
-            return ElementViewModel.FileType.Other;
+            return ElementEnums.FileType.Other;
         }
     }
 }

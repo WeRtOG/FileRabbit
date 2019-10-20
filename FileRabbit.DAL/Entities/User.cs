@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace FileRabbit.Models
+namespace FileRabbit.DAL.Entites
 {
     public class User : IdentityUser
     {

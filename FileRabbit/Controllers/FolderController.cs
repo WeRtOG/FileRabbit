@@ -4,21 +4,24 @@ using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using FileRabbit.Models;
-using FileRabbit.StaticClasses;
-using FileRabbit.ViewModels;
+using FileRabbit.PL.ViewModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using FileRabbit.BLL.Interfaces;
+using AutoMapper;
+using FileRabbit.BLL.DTO;
 
-namespace FileRabbit.Controllers
+namespace FileRabbit.PL.Controllers
 {
     public class FolderController : Controller
     {
-        private ApplicationContext db;
+        private readonly IFileSystemService fileSystemService;
+        private readonly IMapper mapper;
 
-        public FolderController(ApplicationContext context)
+        public FolderController(IFileSystemService service, IMapper mapper)
         {
-            db = context;
+            fileSystemService = service;
+            this.mapper = mapper;
         }
 
         public IActionResult Watch(string folderId)
@@ -26,104 +29,32 @@ namespace FileRabbit.Controllers
             // если пользователь не авторизован, кидаем его на страницу авторизации
             if (!User.Identity.IsAuthenticated)
                 return RedirectToAction("Login", "Account");
-            
-            Folder folder = db.Folders.Find(folderId);
 
-            // если запрашиваемой папки не существует, выкидываем ошибку
-            if (folder == null)
-                return StatusCode(404, "Error code: 404. This folder doesn't exist.");
+            FolderDTO folder = fileSystemService.GetFolderById(folderId);
 
-            // если пользователю не принадлежит запрашиваемая папка, выкидываем ошибку доступа
-            if (folder.OwnerId != User.FindFirstValue(ClaimTypes.NameIdentifier))
-                return StatusCode(405, "Error code: 405. You don't have access to this folder.");
-
-            DirectoryInfo dir = new DirectoryInfo(folder.Path);
-            FileInfo[] files;
-            DirectoryInfo[] dirs;
-
-            files = dir.GetFiles();
-            dirs = dir.GetDirectories();
-
-            List<ElementViewModel> models = new List<ElementViewModel>();
-
-            foreach(var elem in dirs)
+            if (fileSystemService.CheckAccess(folder, User.FindFirstValue(ClaimTypes.NameIdentifier)))
             {
-                ElementViewModel model = new ElementViewModel
-                {
-                    Type = ElementViewModel.FileType.Folder,
-                    ElemName = elem.Name, 
-                    LastModified = elem.LastWriteTime.ToShortDateString(), 
-                    Size = null 
-                };
-                models.Add(model);
+                List<ElementViewModel> models = mapper.Map<ICollection<ElementDTO>, List<ElementViewModel>>
+                    (fileSystemService.GetElementsFromFolder(fileSystemService.GetFolderById(folderId)));
+
+                if (models.Count == 0)
+                    ViewBag.Empty = true;
+                else
+                    ViewBag.Empty = false;
+
+                ViewBag.CurrFolderId = folderId;
+                return View(models);
             }
-
-            foreach (var elem in files)
-            {
-                // для более удобного отображения размера файла, вызовем функцию преобразования
-                Tuple<double, ElementViewModel.Unit> size = new Tuple<double, ElementViewModel.Unit>(elem.Length, ElementViewModel.Unit.B);
-                size = ElementHelperClass.Recount(size);
-                ElementViewModel.FileType type = ElementHelperClass.DefineFileType(elem.Extension);
-
-                ElementViewModel model = new ElementViewModel
-                {
-                    Type = type,
-                    ElemName = elem.Name,
-                    LastModified = elem.LastWriteTime.ToShortDateString(),
-                    Size = size
-                };
-                models.Add(model);
-            }
-
-            ViewBag.Models = models;
-
-            if (files.Length == 0 && dirs.Length == 0)
-                ViewBag.Empty = true;
             else
-                ViewBag.Empty = false;
-
-            ViewBag.CurrFolderId = folderId;
-            return View();
-        }
-
-        public IActionResult CreateNewUserFolder(Folder folder)
-        {
-            // создаём папку нового пользователя в хранилище
-            Directory.CreateDirectory(folder.Path);
-            db.Folders.Add(folder);
-            db.SaveChanges();
-            string folderId = folder.Id;
-            return RedirectToAction("Watch", "Folder", new { folderId });
+                return StatusCode(405, "Error code: 405. You don't have access to this folder.");
         }
 
         [HttpPost]
         [DisableRequestSizeLimit]
         public async Task<IActionResult> Upload(IFormFileCollection uploads, string folderId)
         {
-            Folder parentFolder = db.Folders.Find(folderId);
-            foreach (var uploadedFile in uploads)
-            {
-                string path = parentFolder.Path + "//" + uploadedFile.FileName;
-
-                using (var fileStream = new FileStream(path, FileMode.Create))
-                {
-                    await uploadedFile.CopyToAsync(fileStream);
-                }
-
-                if (!System.IO.File.Exists(path))
-                {
-                    Models.File file = new Models.File
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        Path = path,
-                        IsShared = false,
-                        OwnerId = User.FindFirstValue(ClaimTypes.NameIdentifier),
-                        FolderId = folderId
-                    };
-                    db.Files.Add(file);
-                }
-            }
-            db.SaveChanges();
+            await fileSystemService.UploadFiles(uploads, fileSystemService.GetFolderById(folderId),
+                User.FindFirstValue(ClaimTypes.NameIdentifier));
 
             return RedirectToAction("Watch", "Folder", new { folderId });
         }
@@ -131,29 +62,16 @@ namespace FileRabbit.Controllers
         [HttpPost]
         public IActionResult AddFolder(string folderId, string newFolderName)
         {
-            Folder parentFolder = db.Folders.Find(folderId);
-            string newFolderPath = parentFolder.Path + "//" + newFolderName;
-            if (!Directory.Exists(newFolderPath))
-            {
-                Directory.CreateDirectory(newFolderPath);
-                Folder newFolder = new Folder
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    Path = newFolderPath,
-                    IsShared = parentFolder.IsShared,
-                    OwnerId = User.FindFirstValue(ClaimTypes.NameIdentifier),
-                    ParentFolderId = folderId
-                };
-                db.Folders.Add(newFolder);
-                db.SaveChanges();
+            string newFolderId = fileSystemService.CreateFolder(fileSystemService.GetFolderById(folderId),
+                newFolderName, User.FindFirstValue(ClaimTypes.NameIdentifier));
 
-                return RedirectToAction("Watch", "Folder", new { folderId });
-            }
-            else
+            if (newFolderId == null)
             {
                 ViewBag.ErrorMessage = "This folder already exists.";
                 return PartialView("_AddFolder");
             }
+
+            return RedirectToAction("Watch", "Folder", new { folderId });
         }
     }
 }

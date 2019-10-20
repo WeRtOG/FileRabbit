@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Text;
 using static FileRabbit.BLL.BusinessModels.ElementEnums;
 
-namespace FileRabbit.PL.ViewModels
+namespace FileRabbit.BLL.DTO
 {
-    public class ElementViewModel
+    public class ElementDTO
     {
         public FileType Type { get; set; }
 
@@ -15,6 +14,5 @@ namespace FileRabbit.PL.ViewModels
         public string LastModified { get; set; }
 
         public Tuple<double, Unit> Size { get; set; }
-
     }
 }

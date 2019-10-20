@@ -3,8 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FileRabbit.DAL.Entites;
 
-namespace FileRabbit.Models
+namespace FileRabbit.DAL.Contexts
 {
     public class ApplicationContext : DbContext
     {

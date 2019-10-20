@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace FileRabbit.ViewModels
+namespace FileRabbit.PL.ViewModels
 {
     public class RegisterViewModel
     {

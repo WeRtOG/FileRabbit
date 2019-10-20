@@ -2,18 +2,25 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using FileRabbit.Models;
+using AutoMapper;
+using FileRabbit.BLL.Interfaces;
+using FileRabbit.BLL.Services;
+using FileRabbit.DAL.Contexts;
+using FileRabbit.DAL.Entites;
+using FileRabbit.DAL.Interfaces;
+using FileRabbit.DAL.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace FileRabbit
+namespace FileRabbit.PL
 {
     public class Startup
     {
@@ -33,6 +40,15 @@ namespace FileRabbit
             services.AddDbContext<ApplicationContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("WebStoreConnection")));
 
+            //services.AddSingleton<IdentityDbContext<User>>
+
+            
+            services.AddScoped<IFileSystemService, FileSystemService>();
+            services.AddScoped<IUnitOfWork, EFUnitOfWork>();
+            
+            services.AddScoped<IUserUnitOfWork, UserUnitOfWork>();
+            services.AddScoped<IAuthorizationService, AuthorizationService>();
+
             // определяем требования к паролю и имени пользователя
             services.AddIdentity<User, IdentityRole>(opts => {
                 opts.Password.RequireNonAlphanumeric = false;
@@ -43,6 +59,14 @@ namespace FileRabbit
                 opts.User.RequireUniqueEmail = true;
             })
                 .AddEntityFrameworkStores<UserContext>();
+
+            var mappingConfig = new MapperConfiguration(mc =>
+            {
+                mc.AddProfile(new MappingProfile());
+            });
+
+            IMapper mapper = mappingConfig.CreateMapper();
+            services.AddSingleton(mapper);
 
             services.AddMvc();
             services.Configure<FormOptions>(x =>

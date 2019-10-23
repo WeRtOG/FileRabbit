@@ -1,4 +1,4 @@
-﻿using FileRabbit.BLL.DTO;
+﻿using FileRabbit.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
@@ -9,13 +9,13 @@ namespace FileRabbit.BLL.Interfaces
 {
     public interface IAuthorizationService
     {
-        Task<IdentityResult> CreateUser(UserDTO user);
+        Task<IdentityResult> CreateUser(UserVM user);
 
-        Task SignIn(UserDTO userDTO, bool remember);
+        Task SignIn(UserVM userDTO, bool remember);
 
-        Task<SignInResult> SignInWithPassword(LoginDTO login);
+        Task<SignInResult> SignInWithPassword(LoginVM login);
 
-        Task<UserDTO> FindByName(string name);
+        Task<UserVM> FindByName(string name);
 
         Task SignOut();
     }

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace FileRabbit.BLL.DTO
+namespace FileRabbit.ViewModels
 {
-    public class FolderDTO
+    public class FolderVM
     {
         public string Id { get; set; }
         public string Path { get; set; }

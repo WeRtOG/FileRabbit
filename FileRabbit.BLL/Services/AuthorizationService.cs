@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
-using FileRabbit.BLL.DTO;
 using FileRabbit.BLL.Interfaces;
 using FileRabbit.DAL.Entites;
 using FileRabbit.DAL.Interfaces;
+using FileRabbit.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
@@ -22,7 +22,7 @@ namespace FileRabbit.BLL.Services
             this.mapper = mapper;
         }
 
-        public async Task<IdentityResult> CreateUser(UserDTO user)
+        public async Task<IdentityResult> CreateUser(UserVM user)
         {
             User newUser = new User
             {
@@ -34,7 +34,7 @@ namespace FileRabbit.BLL.Services
             return result;
         }
 
-        public async Task SignIn(UserDTO userDTO, bool remember)
+        public async Task SignIn(UserVM userDTO, bool remember)
         {
             User user = new User
             {
@@ -44,16 +44,16 @@ namespace FileRabbit.BLL.Services
             await database.SignInManager.SignInAsync(user, remember);
         }
 
-        public async Task<SignInResult> SignInWithPassword(LoginDTO login)
+        public async Task<SignInResult> SignInWithPassword(LoginVM login)
         {
             var result = await database.SignInManager.PasswordSignInAsync(login.UserName, login.Password, login.Remember, false);
             return result;
         }
 
-        public async Task<UserDTO> FindByName(string name)
+        public async Task<UserVM> FindByName(string name)
         {
             User user = await database.UserManager.FindByNameAsync(name);
-            return mapper.Map<User, UserDTO>(user);
+            return mapper.Map<User, UserVM>(user);
         }
 
         public async Task SignOut()

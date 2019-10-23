@@ -1,5 +1,4 @@
-﻿using FileRabbit.BLL.DTO;
-using FileRabbit.BLL.Interfaces;
+﻿using FileRabbit.BLL.Interfaces;
 using FileRabbit.DAL.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -9,22 +8,23 @@ using System.IO;
 using FileRabbit.BLL.BusinessModels;
 using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
+using FileRabbit.ViewModels;
 
 namespace FileRabbit.BLL.Services
 {
     public class FileSystemService : IFileSystemService
     {
-        private readonly IUnitOfWork database;
+        private readonly IUnitOfWork _database;
         private readonly IMapper _mapper;
         private const string pathRoot = "C://FileRabbitStore";
 
         public FileSystemService(IUnitOfWork unit, IMapper mapper)
         {
-            database = unit;
+            _database = unit;
             _mapper = mapper;
         }
 
-        public ICollection<ElementDTO> GetElementsFromFolder(FolderDTO folder)
+        public ICollection<ElementVM> GetElementsFromFolder(FolderVM folder)
         {
             DirectoryInfo dir = new DirectoryInfo(folder.Path);
             FileInfo[] files;
@@ -33,13 +33,13 @@ namespace FileRabbit.BLL.Services
             files = dir.GetFiles();
             dirs = dir.GetDirectories();
 
-            List<ElementDTO> models = new List<ElementDTO>();
+            List<ElementVM> models = new List<ElementVM>();
 
             foreach (var elem in dirs)
             {
-                ElementDTO model = new ElementDTO
+                ElementVM model = new ElementVM
                 {
-                    Type = ElementEnums.FileType.Folder,
+                    Type = ElementVM.FileType.Folder,
                     ElemName = elem.Name,
                     LastModified = elem.LastWriteTime.ToShortDateString(),
                     Size = null
@@ -50,11 +50,11 @@ namespace FileRabbit.BLL.Services
             foreach (var elem in files)
             {
                 // для более удобного отображения размера файла, вызовем функцию преобразования
-                Tuple<double, ElementEnums.Unit> size = new Tuple<double, ElementEnums.Unit>(elem.Length, ElementEnums.Unit.B);
+                Tuple<double, ElementVM.Unit> size = new Tuple<double, ElementVM.Unit>(elem.Length, ElementVM.Unit.B);
                 size = ElementHelperClass.Recount(size);
-                ElementEnums.FileType type = ElementHelperClass.DefineFileType(elem.Extension);
+                ElementVM.FileType type = ElementHelperClass.DefineFileType(elem.Extension);
 
-                ElementDTO model = new ElementDTO
+                ElementVM model = new ElementVM
                 {
                     Type = type,
                     ElemName = elem.Name,
@@ -67,13 +67,13 @@ namespace FileRabbit.BLL.Services
             return models;
         }
 
-        public FolderDTO GetFolderById(string id)
+        public FolderVM GetFolderById(string id)
         {
-            FolderDTO folder = _mapper.Map<Folder, FolderDTO>(database.Folders.Get(id));
+            FolderVM folder = _mapper.Map<Folder, FolderVM>(_database.Folders.Get(id));
             return folder;
         }
 
-        public string CreateFolder(FolderDTO parentFolder, string name, string ownerId)
+        public string CreateFolder(FolderVM parentFolder, string name, string ownerId)
         {
             string newFolderPath = parentFolder.Path + "//" + name;
             if (!Directory.Exists(newFolderPath))
@@ -87,8 +87,8 @@ namespace FileRabbit.BLL.Services
                     OwnerId = ownerId,
                     ParentFolderId = parentFolder.Id
                 };
-                database.Folders.Create(newFolder);
-                database.Save();
+                _database.Folders.Create(newFolder);
+                _database.Save();
                 return newFolder.Id;
             }
             return null;
@@ -106,11 +106,11 @@ namespace FileRabbit.BLL.Services
                 OwnerId = ownerId,
                 ParentFolderId = null
             };
-            database.Folders.Create(newFolder);
-            database.Save();
+            _database.Folders.Create(newFolder);
+            _database.Save();
         }
 
-        public async Task UploadFiles(IFormFileCollection files, FolderDTO parentFolder, string ownerId)
+        public async Task UploadFiles(IFormFileCollection files, FolderVM parentFolder, string ownerId)
         {
             foreach (var uploadedFile in files)
             {
@@ -131,13 +131,13 @@ namespace FileRabbit.BLL.Services
                         OwnerId = ownerId,
                         FolderId = parentFolder.Id
                     };
-                    database.Files.Create(file);
+                    _database.Files.Create(file);
                 }
             }
-            database.Save();
+            _database.Save();
         }
 
-        public bool CheckAccess(FolderDTO folder, string currentId)
+        public bool CheckAccess(FolderVM folder, string currentId)
         {
             if (folder.IsShared)
                 return true;

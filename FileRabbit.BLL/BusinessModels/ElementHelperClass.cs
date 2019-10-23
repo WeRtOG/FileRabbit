@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FileRabbit.ViewModels;
 
 namespace FileRabbit.BLL.BusinessModels
 { 
@@ -24,29 +25,29 @@ namespace FileRabbit.BLL.BusinessModels
             ".jpeg", ".jpg", ".mng", ".msp", ".png", ".psd", ".pspimage", ".tga", ".thm", ".tif", ".tiff",
             ".xcf", ".ai", ".cdd", ".cdr", ".eps", ".ps", ".svg", ".vsd" };
 
-        public static Tuple<double, ElementEnums.Unit> Recount(Tuple<double, ElementEnums.Unit> value)
+        public static Tuple<double, ElementVM.Unit> Recount(Tuple<double, ElementVM.Unit> value)
         {
             while(value.Item1 >= MaxByteSize)
-                value = new Tuple<double, ElementEnums.Unit>(value.Item1 / KyloBiteSize, value.Item2 + 1);
+                value = new Tuple<double, ElementVM.Unit>(value.Item1 / KyloBiteSize, value.Item2 + 1);
 
-            return new Tuple<double, ElementEnums.Unit>(Math.Round(value.Item1, 1), value.Item2);
+            return new Tuple<double, ElementVM.Unit>(Math.Round(value.Item1, 1), value.Item2);
         }
 
-        public static ElementEnums.FileType DefineFileType(string extension)
+        public static ElementVM.FileType DefineFileType(string extension)
         {
             if (docTypes.Contains(extension))
-                return ElementEnums.FileType.Document;
+                return ElementVM.FileType.Document;
 
             if (imageTypes.Contains(extension))
-                return ElementEnums.FileType.Image;
+                return ElementVM.FileType.Image;
 
             if (videoTypes.Contains(extension))
-                return ElementEnums.FileType.Video;
+                return ElementVM.FileType.Video;
 
             if (audioTypes.Contains(extension))
-                return ElementEnums.FileType.Audio;
+                return ElementVM.FileType.Audio;
 
-            return ElementEnums.FileType.Other;
+            return ElementVM.FileType.Other;
         }
     }
 }

@@ -13,10 +13,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FileRabbit.DAL\FileRabbit.DAL.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Infrastructure\" />
+    <ProjectReference Include="..\FileRabbit.Infrastructure\FileRabbit.Infrastructure.csproj" />
+    <ProjectReference Include="..\FileRabbit.ViewModels\FileRabbit.ViewModels.csproj" />
   </ItemGroup>
 
 </Project>

@@ -4,12 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using FileRabbit.PL.ViewModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using FileRabbit.BLL.Interfaces;
 using AutoMapper;
-using FileRabbit.BLL.DTO;
+using FileRabbit.ViewModels;
 
 namespace FileRabbit.PL.Controllers
 {
@@ -30,12 +29,11 @@ namespace FileRabbit.PL.Controllers
             if (!User.Identity.IsAuthenticated)
                 return RedirectToAction("Login", "Account");
 
-            FolderDTO folder = fileSystemService.GetFolderById(folderId);
+            FolderVM folder = fileSystemService.GetFolderById(folderId);
 
             if (fileSystemService.CheckAccess(folder, User.FindFirstValue(ClaimTypes.NameIdentifier)))
             {
-                List<ElementViewModel> models = mapper.Map<ICollection<ElementDTO>, List<ElementViewModel>>
-                    (fileSystemService.GetElementsFromFolder(fileSystemService.GetFolderById(folderId)));
+                List<ElementVM> models = fileSystemService.GetElementsFromFolder(fileSystemService.GetFolderById(folderId)).ToList();
 
                 if (models.Count == 0)
                     ViewBag.Empty = true;

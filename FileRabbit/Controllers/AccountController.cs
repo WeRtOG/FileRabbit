@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Threading.Tasks;
-using FileRabbit.PL.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using FileRabbit.BLL.Interfaces;
 using AutoMapper;
-using FileRabbit.BLL.DTO;
+using FileRabbit.ViewModels;
 
 namespace FileRabbit.PL.Controllers
 {
@@ -37,11 +36,11 @@ namespace FileRabbit.PL.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Register(RegisterViewModel model)
+        public async Task<IActionResult> Register(RegisterVM model)
         {
             if (ModelState.IsValid)
             {
-                UserDTO user = new UserDTO 
+                UserVM user = new UserVM
                 { 
                     Id = Guid.NewGuid().ToString(),
                     Email = model.Email,
@@ -81,12 +80,11 @@ namespace FileRabbit.PL.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel model)
+        public async Task<IActionResult> Login(LoginVM model)
         {
             if (ModelState.IsValid)
             {
-                LoginDTO loginDTO = mapper.Map<LoginViewModel, LoginDTO>(model);
-                var result = await authorizationService.SignInWithPassword(loginDTO);
+                var result = await authorizationService.SignInWithPassword(model);
                 if (result.Succeeded)
                 {
                     var user = await authorizationService.FindByName(model.UserName);

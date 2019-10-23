@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using static FileRabbit.BLL.BusinessModels.ElementEnums;
+using System.Text;
 
-namespace FileRabbit.PL.ViewModels
+namespace FileRabbit.ViewModels
 {
-    public class ElementViewModel
+    public class ElementVM
     {
+        public enum FileType { Other, Document, Image, Audio, Video, Folder }
+
+        public enum Unit { B, KB, MB, GB, TB }
+
         public FileType Type { get; set; }
 
         public string ElemName { get; set; }
@@ -15,6 +17,5 @@ namespace FileRabbit.PL.ViewModels
         public string LastModified { get; set; }
 
         public Tuple<double, Unit> Size { get; set; }
-
     }
 }

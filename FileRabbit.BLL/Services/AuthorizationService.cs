@@ -26,6 +26,7 @@ namespace FileRabbit.BLL.Services
         {
             User newUser = new User
             {
+                Id = user.Id,
                 Email = user.Email,
                 UserName = user.UserName
             };
@@ -38,6 +39,7 @@ namespace FileRabbit.BLL.Services
         {
             User user = new User
             {
+                Id = userDTO.Id,
                 Email = userDTO.Email,
                 UserName = userDTO.UserName
             };

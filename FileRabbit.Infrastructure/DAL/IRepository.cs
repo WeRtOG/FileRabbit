@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace FileRabbit.DAL.Interfaces
+namespace FileRabbit.Infrastructure.DAL
 {
     public interface IRepository<T> where T : class
     {

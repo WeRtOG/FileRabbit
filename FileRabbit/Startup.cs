@@ -6,9 +6,10 @@ using AutoMapper;
 using FileRabbit.BLL.Interfaces;
 using FileRabbit.BLL.Services;
 using FileRabbit.DAL.Contexts;
-using FileRabbit.DAL.Entites;
-using FileRabbit.DAL.Interfaces;
+using FileRabbit.DAL.Entities;
 using FileRabbit.DAL.Repositories;
+using FileRabbit.Infrastructure.BLL;
+using FileRabbit.Infrastructure.DAL;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Features;
@@ -34,19 +35,11 @@ namespace FileRabbit.PL
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<UserContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("UserConnection")));
-
             services.AddDbContext<ApplicationContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("WebStoreConnection")));
-
-            //services.AddSingleton<IdentityDbContext<User>>
-
-            
+        
             services.AddScoped<IFileSystemService, FileSystemService>();
             services.AddScoped<IUnitOfWork, EFUnitOfWork>();
-            
-            services.AddScoped<IUserUnitOfWork, UserUnitOfWork>();
             services.AddScoped<IAuthorizationService, AuthorizationService>();
 
             // определяем требования к паролю и имени пользователя
@@ -58,7 +51,7 @@ namespace FileRabbit.PL
                 opts.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+ ";
                 opts.User.RequireUniqueEmail = true;
             })
-                .AddEntityFrameworkStores<UserContext>();
+                .AddEntityFrameworkStores<ApplicationContext>();
 
             var mappingConfig = new MapperConfiguration(mc =>
             {

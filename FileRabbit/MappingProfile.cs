@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using FileRabbit.DAL.Entites;
+using FileRabbit.DAL.Entities;
 using FileRabbit.ViewModels;
 using System;
 using System.Collections.Generic;

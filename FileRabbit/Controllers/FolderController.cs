@@ -51,8 +51,7 @@ namespace FileRabbit.PL.Controllers
         [DisableRequestSizeLimit]
         public async Task<IActionResult> Upload(IFormFileCollection uploads, string folderId)
         {
-            await fileSystemService.UploadFiles(uploads, fileSystemService.GetFolderById(folderId),
-                User.FindFirstValue(ClaimTypes.NameIdentifier));
+            await fileSystemService.UploadFiles(uploads, fileSystemService.GetFolderById(folderId));
 
             return RedirectToAction("Watch", "Folder", new { folderId });
         }

@@ -1,7 +1,8 @@
 ﻿using AutoMapper;
 using FileRabbit.BLL.Interfaces;
-using FileRabbit.DAL.Entites;
-using FileRabbit.DAL.Interfaces;
+using FileRabbit.DAL.Entities;
+using FileRabbit.Infrastructure.BLL;
+using FileRabbit.Infrastructure.DAL;
 using FileRabbit.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using System;
@@ -13,54 +14,44 @@ namespace FileRabbit.BLL.Services
 {
     public class AuthorizationService : IAuthorizationService
     {
-        private readonly IUserUnitOfWork database;
-        private readonly IMapper mapper;
+        private readonly IUnitOfWork _database;
+        private readonly IMapper _mapper;
 
-        public AuthorizationService(IUserUnitOfWork unit, IMapper mapper)
+        public AuthorizationService(IUnitOfWork unit, IMapper mapper)
         {
-            database = unit;
-            this.mapper = mapper;
+            _database = unit;
+            this._mapper = mapper;
         }
 
         public async Task<IdentityResult> CreateUser(UserVM user)
         {
-            User newUser = new User
-            {
-                Id = user.Id,
-                Email = user.Email,
-                UserName = user.UserName
-            };
-            var result = await database.UserManager.CreateAsync(newUser, user.Password);
+            User newUser = _mapper.Map<UserVM, User>(user);
+            var result = await _database.UserManager.CreateAsync(newUser, user.Password);
 
             return result;
         }
 
         public async Task SignIn(UserVM userDTO, bool remember)
         {
-            User user = new User
-            {
-                Id = userDTO.Id,
-                Email = userDTO.Email,
-                UserName = userDTO.UserName
-            };
-            await database.SignInManager.SignInAsync(user, remember);
+            User user = _mapper.Map<UserVM, User>(userDTO);
+            await _database.SignInManager.SignInAsync(user, remember);
         }
 
         public async Task<SignInResult> SignInWithPassword(LoginVM login)
         {
-            var result = await database.SignInManager.PasswordSignInAsync(login.UserName, login.Password, login.Remember, false);
+            var result = await _database.SignInManager.PasswordSignInAsync(login.UserName, login.Password, login.Remember, false);
             return result;
         }
 
         public async Task<UserVM> FindByName(string name)
         {
-            User user = await database.UserManager.FindByNameAsync(name);
-            return mapper.Map<User, UserVM>(user);
+            User user = await _database.UserManager.FindByNameAsync(name);
+            return _mapper.Map<User, UserVM>(user);
         }
 
         public async Task SignOut()
         {
-            await database.SignInManager.SignOutAsync();
+            await _database.SignInManager.SignOutAsync();
         }
     }
 }

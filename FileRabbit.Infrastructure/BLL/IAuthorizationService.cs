@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FileRabbit.BLL.Interfaces
+namespace FileRabbit.Infrastructure.BLL
 {
     public interface IAuthorizationService
     {

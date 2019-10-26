@@ -1,4 +1,4 @@
-﻿using FileRabbit.DAL.Interfaces;
+﻿using FileRabbit.Infrastructure.DAL;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;

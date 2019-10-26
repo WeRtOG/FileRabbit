@@ -14,4 +14,8 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\FileRabbit.Infrastructure\FileRabbit.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>

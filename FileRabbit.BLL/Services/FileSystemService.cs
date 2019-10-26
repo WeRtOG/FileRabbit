@@ -1,14 +1,14 @@
 ﻿using FileRabbit.BLL.Interfaces;
-using FileRabbit.DAL.Interfaces;
 using System;
 using System.Collections.Generic;
 using AutoMapper;
-using FileRabbit.DAL.Entites;
 using System.IO;
 using FileRabbit.BLL.BusinessModels;
 using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
 using FileRabbit.ViewModels;
+using FileRabbit.DAL.Entities;
+using FileRabbit.Infrastructure.DAL;
 
 namespace FileRabbit.BLL.Services
 {
@@ -110,29 +110,28 @@ namespace FileRabbit.BLL.Services
             _database.Save();
         }
 
-        public async Task UploadFiles(IFormFileCollection files, FolderVM parentFolder, string ownerId)
+        public async Task UploadFiles(IFormFileCollection files, FolderVM parentFolder)
         {
             foreach (var uploadedFile in files)
             {
                 string path = parentFolder.Path + "//" + uploadedFile.FileName;
 
-                using (var fileStream = new FileStream(path, FileMode.Create))
-                {
-                    await uploadedFile.CopyToAsync(fileStream);
-                }
-
                 if (!System.IO.File.Exists(path))
                 {
-                    DAL.Entites.File file = new DAL.Entites.File
+                    DAL.Entities.File file = new DAL.Entities.File
                     {
                         Id = Guid.NewGuid().ToString(),
                         Path = path,
                         IsShared = false,
-                        OwnerId = ownerId,
                         FolderId = parentFolder.Id
                     };
                     _database.Files.Create(file);
                 }
+
+                using (var fileStream = new FileStream(path, FileMode.Create))
+                {
+                    await uploadedFile.CopyToAsync(fileStream);
+                } 
             }
             _database.Save();
         }

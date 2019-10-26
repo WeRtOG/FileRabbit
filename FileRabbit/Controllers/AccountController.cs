@@ -9,6 +9,7 @@ using System.Security.Claims;
 using FileRabbit.BLL.Interfaces;
 using AutoMapper;
 using FileRabbit.ViewModels;
+using FileRabbit.Infrastructure.BLL;
 
 namespace FileRabbit.PL.Controllers
 {

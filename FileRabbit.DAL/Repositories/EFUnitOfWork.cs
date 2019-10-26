@@ -1,31 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using FileRabbit.DAL.Interfaces;
-using FileRabbit.DAL.Entites;
 using FileRabbit.DAL.Contexts;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using FileRabbit.Infrastructure.DAL;
+using FileRabbit.DAL.Entities;
 
 namespace FileRabbit.DAL.Repositories
 {
     public class EFUnitOfWork : IUnitOfWork
     {
-        private ApplicationContext db;
-        private FileRepository fileRepository;
-        private FolderRepository folderRepository;
+        private ApplicationContext _db;
+        private FileRepository _fileRepository;
+        private FolderRepository _folderRepository;
+        private readonly UserManager<User> _userManager;
+        private readonly SignInManager<User> _signInManager;
 
-        public EFUnitOfWork(ApplicationContext context)
+        public EFUnitOfWork(ApplicationContext context, UserManager<User> user, SignInManager<User> signIn)
         {
-            db = context;
+            _db = context;
+            _userManager = user;
+            _signInManager = signIn;
         }
 
         public IRepository<Folder> Folders
         {
             get
             {
-                if (folderRepository == null)
-                    folderRepository = new FolderRepository(db);
-                return folderRepository;
+                if (_folderRepository == null)
+                    _folderRepository = new FolderRepository(_db);
+                return _folderRepository;
             }
         }
 
@@ -33,10 +38,20 @@ namespace FileRabbit.DAL.Repositories
         {
             get
             {
-                if (fileRepository == null)
-                    fileRepository = new FileRepository(db);
-                return fileRepository;
+                if (_fileRepository == null)
+                    _fileRepository = new FileRepository(_db);
+                return _fileRepository;
             }
+        }
+
+        public UserManager<User> UserManager
+        {
+            get { return _userManager; }
+        }
+
+        public SignInManager<User> SignInManager
+        {
+            get { return _signInManager; }
         }
 
         private bool disposed = false;
@@ -46,7 +61,7 @@ namespace FileRabbit.DAL.Repositories
             {
                 if (disposing)
                 {
-                    db.Dispose();
+                    _db.Dispose();
                 }
                 disposed = true;
             }
@@ -60,7 +75,7 @@ namespace FileRabbit.DAL.Repositories
 
         public void Save()
         {
-            db.SaveChanges();
+            _db.SaveChanges();
         }
     }
 }

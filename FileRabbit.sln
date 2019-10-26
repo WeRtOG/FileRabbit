@@ -6,12 +6,14 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileRabbit.PL", "FileRabbit\FileRabbit.PL.csproj", "{3E686976-DDCA-462A-AFC2-B84D27EE5EA4}"
 	ProjectSection(ProjectDependencies) = postProject
 		{3D0D1ACA-1009-4430-AAED-DBCC7FC6695D} = {3D0D1ACA-1009-4430-AAED-DBCC7FC6695D}
+		{389E0DF3-BACB-4890-9C5A-3EE25990DE12} = {389E0DF3-BACB-4890-9C5A-3EE25990DE12}
 		{A08FC8F7-9A19-412A-8422-B669CA4B466D} = {A08FC8F7-9A19-412A-8422-B669CA4B466D}
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileRabbit.DAL", "FileRabbit.DAL\FileRabbit.DAL.csproj", "{A293AF88-6B4E-4F05-B816-D549BC06DAC4}"
 	ProjectSection(ProjectDependencies) = postProject
 		{3D0D1ACA-1009-4430-AAED-DBCC7FC6695D} = {3D0D1ACA-1009-4430-AAED-DBCC7FC6695D}
+		{389E0DF3-BACB-4890-9C5A-3EE25990DE12} = {389E0DF3-BACB-4890-9C5A-3EE25990DE12}
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileRabbit.BLL", "FileRabbit.BLL\FileRabbit.BLL.csproj", "{7EB553EC-16F1-445B-A9F4-8A259084711F}"
@@ -20,9 +22,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileRabbit.BLL", "FileRabbi
 		{A08FC8F7-9A19-412A-8422-B669CA4B466D} = {A08FC8F7-9A19-412A-8422-B669CA4B466D}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileRabbit.Infrastructure", "FileRabbit.Infrastructure\FileRabbit.Infrastructure.csproj", "{3D0D1ACA-1009-4430-AAED-DBCC7FC6695D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileRabbit.Infrastructure", "FileRabbit.Infrastructure\FileRabbit.Infrastructure.csproj", "{3D0D1ACA-1009-4430-AAED-DBCC7FC6695D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{389E0DF3-BACB-4890-9C5A-3EE25990DE12} = {389E0DF3-BACB-4890-9C5A-3EE25990DE12}
+		{A08FC8F7-9A19-412A-8422-B669CA4B466D} = {A08FC8F7-9A19-412A-8422-B669CA4B466D}
+	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileRabbit.ViewModels", "FileRabbit.ViewModels\FileRabbit.ViewModels.csproj", "{A08FC8F7-9A19-412A-8422-B669CA4B466D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileRabbit.ViewModels", "FileRabbit.ViewModels\FileRabbit.ViewModels.csproj", "{A08FC8F7-9A19-412A-8422-B669CA4B466D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileRabbit.DAL.Entities", "FileRabbit.DAL.Entities\FileRabbit.DAL.Entities.csproj", "{389E0DF3-BACB-4890-9C5A-3EE25990DE12}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -50,6 +58,10 @@ Global
 		{A08FC8F7-9A19-412A-8422-B669CA4B466D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A08FC8F7-9A19-412A-8422-B669CA4B466D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A08FC8F7-9A19-412A-8422-B669CA4B466D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{389E0DF3-BACB-4890-9C5A-3EE25990DE12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{389E0DF3-BACB-4890-9C5A-3EE25990DE12}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{389E0DF3-BACB-4890-9C5A-3EE25990DE12}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{389E0DF3-BACB-4890-9C5A-3EE25990DE12}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

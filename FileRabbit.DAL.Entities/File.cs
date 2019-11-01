@@ -21,7 +21,7 @@ namespace FileRabbit.DAL.Entities
         [Required]
         public string FolderId { get; set; }
 
-        public Folder Folder { get; set; }
+        public virtual Folder Folder { get; set; }
 
         [Required]
         public bool IsShared { get; set; }

@@ -3,27 +3,10 @@
     ViewData["Title"] = "Watch";
 }
 
-<style>
-    #dropDiv {
-        width: 100%;
-        border: 1px solid #CCCCCC;
-        margin-top: 20px;
-        padding: 80px 20px;
-        text-align: center;
-        color: #CCCCCC;
-    }
-
-        #dropDiv.over {
-            border-color: #DE7E7E;
-            color: #DE7E7E;
-            background-color: #FFEDED;
-        }
-</style>
-
 @if (ViewBag.Empty == false)
 {
     <h1 class="text-white">Your files</h1>
-    <table class="text-white table">
+    <table class="text-white table-hover table">
         <tr>
             <th></th>
             <th>Name</th>
@@ -32,7 +15,12 @@
         </tr>
         @foreach (var elem in Model)
         {
-            <tr>
+            if(elem.IsFolder)
+                ViewBag.Link = @Url.Action("Watch", "Folder") + "?folderId=";
+            else
+                ViewBag.Link = @Url.Action("Download", "Folder") + "?fileId=";
+
+            <tr ondblclick="window.location.href = '@ViewBag.Link' + '@elem.Id'">
                 @switch (elem.Type.ToString())
                 {
                     case "Document":
@@ -80,28 +68,19 @@ else
 <form asp-action="Upload" asp-controller="Folder" method="post" enctype="multipart/form-data">
     <input type="hidden" value="@ViewBag.CurrFolderId" name="folderId" />
     <input type="file" name="uploads" multiple="multiple" />
-    <input type="submit" value="Загрузить" />
+    <input type="submit" value="Upload" />
 </form>
 <form asp-action="AddFolder" asp-controller="Folder" method="post" enctype="multipart/form-data">
     <input type="hidden" value="@ViewBag.CurrFolderId" name="folderId" />
     <input type="text" name="newFolderName" />
-    <input type="submit" value="Создать папку" />
+    <input type="submit" value="Create folder" />
 </form>
-
-@*<input id="dirinput" multiple="" directory="" type="file" />
 <script>
-    var dirinput = document.getElementById("dirinput");
-    dirinput.addEventListener("change", function (e)
-    {
-        if ('getFilesAndDirectories' in this)
-        {
-            this.getFilesAndDirectories().then(function (filesAndDirs)
-            {
-                for (var i = 0, arrSize = filesAndDirs.length; i < arrSize; i++)
-                {
-                    iterateFilesAndDirs(filesAndDirs[i]);
-                }
-            });
-        }
-    }, false);
-</script>*@
+    function OpenFolder(id) {
+        $.get({
+            url: "Folder/Watch",
+            contentType: "application/json",
+            data: JSON.stringify({ folderId: id })
+        })
+    }
+</script>

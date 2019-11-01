@@ -8,7 +8,7 @@ namespace FileRabbit.DAL.Entities
 {
     public class User : IdentityUser
     {
-        public ICollection<Folder> Folders { get; set; }
+        public virtual ICollection<Folder> Folders { get; set; }
 
         public User()
         {

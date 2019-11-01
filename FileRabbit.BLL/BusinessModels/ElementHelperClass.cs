@@ -25,16 +25,29 @@ namespace FileRabbit.BLL.BusinessModels
             ".jpeg", ".jpg", ".mng", ".msp", ".png", ".psd", ".pspimage", ".tga", ".thm", ".tif", ".tiff",
             ".xcf", ".ai", ".cdd", ".cdr", ".eps", ".ps", ".svg", ".vsd" };
 
+        // this method is needed to translate bytes to kylo-, mega-, gigabytes
         public static Tuple<double, ElementVM.Unit> Recount(Tuple<double, ElementVM.Unit> value)
         {
+            // if current value is more than 1000, translate to a large unit
             while(value.Item1 >= MaxByteSize)
                 value = new Tuple<double, ElementVM.Unit>(value.Item1 / KyloBiteSize, value.Item2 + 1);
 
             return new Tuple<double, ElementVM.Unit>(Math.Round(value.Item1, 1), value.Item2);
         }
 
+        // this method is needed to define file extension
+        public static string DefineFileExtension(string name)
+        {
+            string result;
+            result = name.Substring(name.LastIndexOf('.'));
+            return result;
+        }
+
+        // this method is needed to define file type by its extension
         public static ElementVM.FileType DefineFileType(string extension)
         {
+            extension = extension.ToLower();
+
             if (docTypes.Contains(extension))
                 return ElementVM.FileType.Document;
 

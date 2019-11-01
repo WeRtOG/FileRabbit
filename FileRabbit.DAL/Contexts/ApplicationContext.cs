@@ -15,6 +15,7 @@ namespace FileRabbit.DAL.Contexts
 
         public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
         {
+            // create database with Folders and Files tables + all tables for Identity
             Database.EnsureCreated();
         }
     }

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using FileRabbit.ViewModels;
 using FileRabbit.DAL.Entities;
 using FileRabbit.Infrastructure.DAL;
+using System.Linq;
 
 namespace FileRabbit.BLL.Services
 {
@@ -24,9 +25,10 @@ namespace FileRabbit.BLL.Services
             _mapper = mapper;
         }
 
-        public ICollection<ElementVM> GetElementsFromFolder(FolderVM folder)
+        // this method returns all folders and files that are contained in the needed folder
+        public ICollection<ElementVM> GetElementsFromFolder(FolderVM folderVM)
         {
-            DirectoryInfo dir = new DirectoryInfo(folder.Path);
+            DirectoryInfo dir = new DirectoryInfo(folderVM.Path);
             FileInfo[] files;
             DirectoryInfo[] dirs;
 
@@ -35,10 +37,16 @@ namespace FileRabbit.BLL.Services
 
             List<ElementVM> models = new List<ElementVM>();
 
+            List<Folder> childFolders = _database.Folders.Find(f => f.ParentFolderId == folderVM.Id).ToList();
+            List<DAL.Entities.File> childFiles = _database.Files.Find(f => f.FolderId == folderVM.Id).ToList();
+
             foreach (var elem in dirs)
             {
+                string s = childFolders[0].Path;
                 ElementVM model = new ElementVM
                 {
+                    Id = childFolders.Find(f => f.Path == elem.FullName.Replace("\\", "//")).Id,
+                    IsFolder = true,
                     Type = ElementVM.FileType.Folder,
                     ElemName = elem.Name,
                     LastModified = elem.LastWriteTime.ToShortDateString(),
@@ -56,6 +64,8 @@ namespace FileRabbit.BLL.Services
 
                 ElementVM model = new ElementVM
                 {
+                    Id = childFiles.Find(f => f.Path == elem.FullName.Replace("\\", "//")).Id,
+                    IsFolder = false,
                     Type = type,
                     ElemName = elem.Name,
                     LastModified = elem.LastWriteTime.ToShortDateString(),
@@ -67,13 +77,15 @@ namespace FileRabbit.BLL.Services
             return models;
         }
 
+        // this method returns folder by id
         public FolderVM GetFolderById(string id)
         {
             FolderVM folder = _mapper.Map<Folder, FolderVM>(_database.Folders.Get(id));
             return folder;
         }
 
-        public string CreateFolder(FolderVM parentFolder, string name, string ownerId)
+        // this method creates a new folder on the hard drive, saves it in the database and return it
+        public ElementVM CreateFolder(FolderVM parentFolder, string name, string ownerId)
         {
             string newFolderPath = parentFolder.Path + "//" + name;
             if (!Directory.Exists(newFolderPath))
@@ -89,11 +101,22 @@ namespace FileRabbit.BLL.Services
                 };
                 _database.Folders.Create(newFolder);
                 _database.Save();
-                return newFolder.Id;
+
+                ElementVM model = new ElementVM
+                {
+                    Id = newFolder.Id,
+                    IsFolder = true,
+                    Type = ElementVM.FileType.Folder,
+                    ElemName = name,
+                    LastModified = DateTime.Now.ToShortDateString(),
+                    Size = null
+                };
+                return model;
             }
             return null;
         }
 
+        // this method creates a new root folder on the hard drive and saves it in the database
         public void CreateFolder(string ownerId)
         {
             // создаём папку нового пользователя в хранилище
@@ -110,8 +133,10 @@ namespace FileRabbit.BLL.Services
             _database.Save();
         }
 
-        public async Task UploadFiles(IFormFileCollection files, FolderVM parentFolder)
+        // this method upload files on the hard drive and saves them in the database
+        public async Task<ICollection<ElementVM>> UploadFiles(IFormFileCollection files, FolderVM parentFolder)
         {
+            List<ElementVM> elements = new List<ElementVM>();
             foreach (var uploadedFile in files)
             {
                 string path = parentFolder.Path + "//" + uploadedFile.FileName;
@@ -126,6 +151,17 @@ namespace FileRabbit.BLL.Services
                         FolderId = parentFolder.Id
                     };
                     _database.Files.Create(file);
+
+                    ElementVM elem = new ElementVM
+                    {
+                        Id = file.Id,
+                        IsFolder = false,
+                        ElemName = uploadedFile.FileName,
+                        LastModified = DateTime.Now.ToShortDateString(),
+                        Type = ElementHelperClass.DefineFileType(ElementHelperClass.DefineFileExtension(uploadedFile.FileName)),
+                        Size = ElementHelperClass.Recount(new Tuple<double, ElementVM.Unit>(uploadedFile.Length, ElementVM.Unit.B))
+                    };
+                    elements.Add(elem);
                 }
 
                 using (var fileStream = new FileStream(path, FileMode.Create))
@@ -134,8 +170,10 @@ namespace FileRabbit.BLL.Services
                 } 
             }
             _database.Save();
+            return elements;
         }
 
+        // this method checks access to the needed folder by current user
         public bool CheckAccess(FolderVM folder, string currentId)
         {
             if (folder.IsShared)

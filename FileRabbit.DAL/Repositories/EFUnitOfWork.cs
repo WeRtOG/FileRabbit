@@ -42,7 +42,7 @@ namespace FileRabbit.DAL.Repositories
                     _fileRepository = new FileRepository(_db);
                 return _fileRepository;
             }
-        }
+        } 
 
         public UserManager<User> UserManager
         {

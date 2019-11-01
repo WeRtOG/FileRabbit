@@ -21,12 +21,8 @@ namespace FileRabbit.PL.Controllers
 
         public IActionResult Index()
         {
+            // we need the id for Start work button, which redirect to Folder/Watch or Account/Login, if id = null
             ViewBag.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            return View();
-        }
-
-        public IActionResult Privacy()
-        {
             return View();
         }
 

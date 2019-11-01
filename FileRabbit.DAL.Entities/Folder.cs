@@ -21,20 +21,20 @@ namespace FileRabbit.DAL.Entities
         public string ParentFolderId { get; set; }
 
         [ForeignKey("ParentFolderId")]
-        public Folder ParentFolder { get; set; }
+        public virtual Folder ParentFolder { get; set; }
 
         [Required]
         public string OwnerId { get; set; }
 
         [ForeignKey("OwnerId")]
-        public User User { get; set; }
+        public virtual User User { get; set; }
 
         [Required]
         public bool IsShared { get; set; }
 
-        public ICollection<Folder> Folders { get; set; }
+        public virtual ICollection<Folder> Folders { get; set; }
 
-        public ICollection<File> Files { get; set; }
+        public virtual ICollection<File> Files { get; set; }
 
         public Folder()
         {

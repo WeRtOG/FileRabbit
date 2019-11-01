@@ -27,20 +27,24 @@ namespace FileRabbit.PL.Controllers
         }
 
         #region Register
+        // this action is called by clicking the registration button in the header
         [HttpGet]
         public IActionResult Register()
         {
-            // если пользователь уже авторизован, то регистрация ему не нужна - перенаправляем на главную страницу
+            // if the user is authenticated, he doesn't need registration
             if (User.Identity.IsAuthenticated)
                 return RedirectToAction("Index", "Home");
             return View();
         }
 
+        //this action is called by clicking the registration button on the form
         [HttpPost]
         public async Task<IActionResult> Register(RegisterVM model)
         {
+            // if all inputs field are correct
             if (ModelState.IsValid)
             {
+                // create a new user
                 UserVM user = new UserVM
                 { 
                     Id = Guid.NewGuid().ToString(),
@@ -50,10 +54,11 @@ namespace FileRabbit.PL.Controllers
                 };
                 var result = await authorizationService.CreateUser(user);
 
+                // if registration is successful, go to new empty folder of user
                 if (result.Succeeded)
                 {
                     await authorizationService.SignIn(user, false);
-                    fileSystemService.CreateFolder(user.Id);
+                    fileSystemService.CreateFolder(user.Id);    // new root folder creating
                     string folderId = user.Id;
                     return RedirectToAction("Watch", "Folder", new { folderId });
                 }
@@ -70,24 +75,29 @@ namespace FileRabbit.PL.Controllers
         #endregion
 
         #region Login/Logoff
+        // this action is called by clicking the login button in the header
         [HttpGet]
         public IActionResult Login()
         {
-            // если пользователь уже авторизован, то регистрация ему не нужна - перенаправляем на главную страницу
+            // if the user is authenticated, he doesn't need registration
             if (User.Identity.IsAuthenticated)
                 return RedirectToAction("Index", "Home");
             return View();
         }
 
+        // this action is called by clicking the login button on the form
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginVM model)
         {
+            // if all inputs field are correct
             if (ModelState.IsValid)
             {
+                // try to sign in
                 var result = await authorizationService.SignInWithPassword(model);
                 if (result.Succeeded)
                 {
+                    // after successful login redirect to root folder of the user
                     var user = await authorizationService.FindByName(model.UserName);
                     var userId = user.Id;
                     if (userId != null)
@@ -103,6 +113,7 @@ namespace FileRabbit.PL.Controllers
             return View(model);
         }
 
+        // this action is called by clicking the logoff button in the header
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> LogOff()

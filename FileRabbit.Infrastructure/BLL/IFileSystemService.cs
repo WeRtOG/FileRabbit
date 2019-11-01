@@ -9,8 +9,8 @@ namespace FileRabbit.BLL.Interfaces
 {
     public interface IFileSystemService
     {
-        Task UploadFiles(IFormFileCollection files, FolderVM parentFolder);
-        string CreateFolder(FolderVM parentFolder, string name, string ownerId);
+        Task<ICollection<ElementVM>> UploadFiles(IFormFileCollection files, FolderVM parentFolder);
+        ElementVM CreateFolder(FolderVM parentFolder, string name, string ownerId);
         void CreateFolder(string ownerId);
         FolderVM GetFolderById(string id);
         ICollection<ElementVM> GetElementsFromFolder(FolderVM folder);

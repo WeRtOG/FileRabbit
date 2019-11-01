@@ -23,18 +23,21 @@ namespace FileRabbit.PL.Controllers
             this.mapper = mapper;
         }
 
+        // this action returns all folders and files that are contained in the needed folder
         public IActionResult Watch(string folderId)
         {
-            // если пользователь не авторизован, кидаем его на страницу авторизации
+            // if the user is not authenticated, redirect to login page
             if (!User.Identity.IsAuthenticated)
                 return RedirectToAction("Login", "Account");
 
             FolderVM folder = fileSystemService.GetFolderById(folderId);
 
+            // check access to needed folder
             if (fileSystemService.CheckAccess(folder, User.FindFirstValue(ClaimTypes.NameIdentifier)))
             {
                 List<ElementVM> models = fileSystemService.GetElementsFromFolder(fileSystemService.GetFolderById(folderId)).ToList();
 
+                // if folder is empty
                 if (models.Count == 0)
                     ViewBag.Empty = true;
                 else
@@ -51,24 +54,20 @@ namespace FileRabbit.PL.Controllers
         [DisableRequestSizeLimit]
         public async Task<IActionResult> Upload(IFormFileCollection uploads, string folderId)
         {
-            await fileSystemService.UploadFiles(uploads, fileSystemService.GetFolderById(folderId));
+            List<ElementVM> elements = (await fileSystemService.UploadFiles(uploads, fileSystemService.GetFolderById(folderId))).ToList();
 
-            return RedirectToAction("Watch", "Folder", new { folderId });
+            return new ObjectResult(elements);
         }
 
         [HttpPost]
         public IActionResult AddFolder(string folderId, string newFolderName)
         {
-            string newFolderId = fileSystemService.CreateFolder(fileSystemService.GetFolderById(folderId),
+            ElementVM newFolder = fileSystemService.CreateFolder(fileSystemService.GetFolderById(folderId),
                 newFolderName, User.FindFirstValue(ClaimTypes.NameIdentifier));
 
-            if (newFolderId == null)
-            {
-                ViewBag.ErrorMessage = "This folder already exists.";
-                return PartialView("_AddFolder");
-            }
-
-            return RedirectToAction("Watch", "Folder", new { folderId });
+            if (newFolder == null)
+                return BadRequest("This folder already exists.");
+            return new ObjectResult(newFolder);
         }
     }
 }

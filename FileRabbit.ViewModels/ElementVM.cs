@@ -10,6 +10,10 @@ namespace FileRabbit.ViewModels
 
         public enum Unit { B, KB, MB, GB, TB }
 
+        public string Id { get; set; }
+
+        public bool IsFolder { get; set; }
+
         public FileType Type { get; set; }
 
         public string ElemName { get; set; }

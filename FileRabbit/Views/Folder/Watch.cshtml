@@ -3,9 +3,15 @@
     ViewData["Title"] = "Watch";
 }
 
+@foreach (var elem in ViewBag.FolderPath)
+{
+    ViewBag.Link = @Url.Action("Watch", "Folder") + "?folderId=";
+    <a class="text-white" style="font-size:24px">-></a>
+    <a class="text-white" style="font-size:24px" href="@ViewBag.Link@elem.Id">@elem.Name</a>
+}
+
 @if (ViewBag.Empty == false)
 {
-    <h1 class="text-white">Your files</h1>
     <table class="text-white table-hover table">
         <tr>
             <th></th>
@@ -15,7 +21,7 @@
         </tr>
         @foreach (var elem in Model)
         {
-            if(elem.IsFolder)
+            if (elem.IsFolder)
                 ViewBag.Link = @Url.Action("Watch", "Folder") + "?folderId=";
             else
                 ViewBag.Link = @Url.Action("Download", "Folder") + "?fileId=";

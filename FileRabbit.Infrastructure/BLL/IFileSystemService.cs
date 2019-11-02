@@ -14,6 +14,7 @@ namespace FileRabbit.BLL.Interfaces
         void CreateFolder(string ownerId);
         FolderVM GetFolderById(string id);
         ICollection<ElementVM> GetElementsFromFolder(FolderVM folder);
+        Stack<FolderShortInfoVM> GetFolderPath(string currFolderId);
         bool CheckAccess(FolderVM folder, string currentId);
     }
 }

@@ -36,6 +36,9 @@ namespace FileRabbit.PL.Controllers
             if (fileSystemService.CheckAccess(folder, User.FindFirstValue(ClaimTypes.NameIdentifier)))
             {
                 List<ElementVM> models = fileSystemService.GetElementsFromFolder(fileSystemService.GetFolderById(folderId)).ToList();
+                Stack<FolderShortInfoVM> folderPath = fileSystemService.GetFolderPath(folderId);
+
+                ViewBag.FolderPath = folderPath;
 
                 // if folder is empty
                 if (models.Count == 0)

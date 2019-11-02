@@ -77,6 +77,27 @@ namespace FileRabbit.BLL.Services
             return models;
         }
 
+        public Stack<FolderShortInfoVM> GetFolderPath(string currFolderId)
+        {
+            Stack<FolderShortInfoVM> folderPath = new Stack<FolderShortInfoVM>();
+
+            bool rootFolder = false;
+            do
+            {
+                Folder folder = _database.Folders.Get(currFolderId);
+                FolderShortInfoVM folderInfo = new FolderShortInfoVM { Id = folder.Id, Name = ElementHelperClass.DefineFileName(folder.Path) };
+                currFolderId = folder.ParentFolderId;
+                if (folder.ParentFolderId == null)
+                {
+                    rootFolder = true;
+                    folderInfo.Name = "Your drive";
+                }
+                folderPath.Push(folderInfo);
+            } while (!rootFolder);
+
+            return folderPath;
+        }
+
         // this method returns folder by id
         public FolderVM GetFolderById(string id)
         {

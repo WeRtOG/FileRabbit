@@ -43,6 +43,14 @@ namespace FileRabbit.BLL.BusinessModels
             return result;
         }
 
+        // this method is needed to define file name
+        public static string DefineFileName(string path)
+        {
+            string result;
+            result = path.Substring(path.LastIndexOf("//") + 2);
+            return result;
+        }
+
         // this method is needed to define file type by its extension
         public static ElementVM.FileType DefineFileType(string extension)
         {

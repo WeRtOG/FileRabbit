@@ -62,6 +62,15 @@ namespace FileRabbit.PL.Controllers
             return new ObjectResult(elements);
         }
 
+        public IActionResult Download(string fileId)
+        {
+            FileVM file = fileSystemService.GetFileById(fileId);
+            if (fileSystemService.CheckAccess(file, User.FindFirstValue(ClaimTypes.NameIdentifier)))
+                return PhysicalFile(file.Path, "application/file", file.Name);
+            else
+                return StatusCode(405, "Error code: 405. You don't have access to this file.");
+        }
+
         [HttpPost]
         public IActionResult AddFolder(string folderId, string newFolderName)
         {

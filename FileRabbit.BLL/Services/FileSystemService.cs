@@ -77,6 +77,7 @@ namespace FileRabbit.BLL.Services
             return models;
         }
 
+        // this method return path to current folder as list
         public Stack<FolderShortInfoVM> GetFolderPath(string currFolderId)
         {
             Stack<FolderShortInfoVM> folderPath = new Stack<FolderShortInfoVM>();
@@ -103,6 +104,16 @@ namespace FileRabbit.BLL.Services
         {
             FolderVM folder = _mapper.Map<Folder, FolderVM>(_database.Folders.Get(id));
             return folder;
+        }
+
+        // this method returns file by id
+        public FileVM GetFileById(string id)
+        {
+            FileVM file = _mapper.Map<DAL.Entities.File, FileVM>(_database.Files.Get(id));
+            file.OwnerId = _database.Folders.Get(file.FolderId).OwnerId;
+            file.Name = ElementHelperClass.DefineFileName(file.Path);
+            file.Path = file.Path.Replace("//", "/");
+            return file;
         }
 
         // this method creates a new folder on the hard drive, saves it in the database and return it
@@ -206,5 +217,18 @@ namespace FileRabbit.BLL.Services
                 return false;
             }   
         }
+
+        // this method checks access to the needed file by current user
+        public bool CheckAccess(FileVM file, string currentId)
+        {
+            if (file.IsShared)
+                return true;
+            else
+            {
+                if (file.OwnerId == currentId)
+                    return true;
+                return false;
+            }
+        }   
     }
 }

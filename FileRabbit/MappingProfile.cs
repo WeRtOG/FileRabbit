@@ -12,6 +12,8 @@ namespace FileRabbit.PL
     {
         public MappingProfile()
         {
+            CreateMap<FileVM, File>();
+            CreateMap<File, FileVM>();
             CreateMap<FolderVM, Folder>();
             CreateMap<Folder, FolderVM>();
             CreateMap<User, UserVM>();

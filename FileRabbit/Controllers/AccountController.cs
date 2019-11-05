@@ -114,8 +114,7 @@ namespace FileRabbit.PL.Controllers
         }
 
         // this action is called by clicking the logoff button in the header
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpGet]
         public async Task<IActionResult> LogOff()
         {
             // удаляем аутентификационные куки

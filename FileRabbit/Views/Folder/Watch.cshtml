@@ -3,64 +3,108 @@
     ViewData["Title"] = "Watch";
 }
 
-@foreach (var elem in ViewBag.FolderPath)
-{
-    ViewBag.Link = @Url.Action("Watch", "Folder") + "?folderId=";
-    <a class="text-white" style="font-size:24px">-></a>
-    <a class="text-white" style="font-size:24px" href="@ViewBag.Link@elem.Id">@elem.Name</a>
-}
+<section class="action-bar">
+    <div class="path">
+        @foreach (var elem in ViewBag.FolderPath)
+        {
+            ViewBag.Link = @Url.Action("Watch", "Folder") + "?folderId=";
+            <a class="text-white path-separator">
+                <i class="material-icons">
+                    arrow_forward_ios
+                </i>
+            </a>
+            <a class="text-white" href="@ViewBag.Link@elem.Id">@elem.Name</a>
+        }
+    </div>
+    <div class="actions">
+        <button class="upload">
+            <i class="material-icons" data-toggle="modal" data-target="#fileUpload">
+                cloud_upload
+            </i>
+        </button>
+        <button class="newfolder">
+            <i class="material-icons"  data-toggle="modal" data-target="#folderCreate">
+                create_new_folder
+            </i>
+        </button>
+        <button class="download inactive">
+            <i class="material-icons">
+                save_alt
+            </i>
+        </button>
+        <button class="rename inactive">
+            <i class="material-icons">
+                create
+            </i>
+        </button>
+        <button class="share inactive">
+            <i class="material-icons">
+                share
+            </i>
+        </button>
+        <button class="delete inactive">
+            <i class="material-icons">
+                delete_sweep
+            </i>
+        </button>
+    </div>
+</section>
+
 
 @if (ViewBag.Empty == false)
 {
-    <table class="text-white table-hover table">
-        <tr>
-            <th></th>
-            <th>Name</th>
-            <th>Last change</th>
-            <th>Size</th>
-        </tr>
-        @foreach (var elem in Model)
-        {
-            if (elem.IsFolder)
-                ViewBag.Link = @Url.Action("Watch", "Folder") + "?folderId=";
-            else
-                ViewBag.Link = @Url.Action("Download", "Folder") + "?fileId=";
-
-            <tr ondblclick="window.location.href = '@ViewBag.Link' + '@elem.Id'">
-                @switch (elem.Type.ToString())
-                {
-                    case "Document":
-                        <td><img src="~/img/file_document.png" class="navbar-toggler-icon"></td>
-                        break;
-                    case "Image":
-                        <td><img src="~/img/file_image.png" class="navbar-toggler-icon"></td>
-                        break;
-                    case "Video":
-                        <td><img src="~/img/file_video.png" class="navbar-toggler-icon"></td>
-                        break;
-                    case "Audio":
-                        <td><img src="~/img/file_music.png" class="navbar-toggler-icon"></td>
-                        break;
-                    case "Folder":
-                        <td><img src="~/img/folder.png" class="navbar-toggler-icon"></td>
-                        break;
-                    default:
-                        <td><img src="~/img/explorer.png" class="navbar-toggler-icon"></td>
-                        break;
-                }
-                <td>@elem.ElemName</td>
-                <td>@elem.LastModified</td>
-                @if (elem.Size == null)
-                {
-                    <td>-</td>
-                }
-                else
-                {
-                    <td>@elem.Size.Item1 @elem.Size.Item2</td>
-                }
+    <section class="file-bar">
+        <table class="text-white file-table">
+            <tr>
+                <th width="28"></th>
+                <th>Name</th>
+                <th>Last change</th>
+                <th>Size</th>
             </tr>
-        }
-    </table>
+            @foreach (var elem in Model)
+            {
+                if (elem.IsFolder)
+                    ViewBag.Link = @Url.Action("Watch", "Folder") + "?folderId=";
+                else
+                    ViewBag.Link = @Url.Action("Download", "Folder") + "?fileId=";
+
+                <tr ondblclick="window.location.href = '@ViewBag.Link' + '@elem.Id'">
+                    @switch (elem.Type.ToString())
+                    {
+                        case "Document":
+                            <td class="icon"><i class="material-icons">insert_drive_file</i></td>
+                            break;
+                        case "Image":
+                            <td class="icon"><i class="material-icons">image</i></td>
+                            break;
+                        case "Video":
+                            <td class="icon"><i class="material-icons">movie</i></td>
+                            break;
+                        case "Audio":
+                            <td class="icon"><i class="material-icons">music_note</i></td>
+                            break;
+                        case "Folder":
+                            <td class="icon"><i class="material-icons">folder</i></td>
+                            break;
+                        default:
+                            <td class="icon"><i class="material-icons">insert_drive_file</i></td>
+                            break;
+                    }
+                    <td>@elem.ElemName</td>
+                    <td>@elem.LastModified</td>
+                    @if (elem.Size == null)
+                    {
+                        <td>-</td>
+                    }
+                    else
+                    {
+                        <td>@elem.Size.Item1 @elem.Size.Item2</td>
+                    }
+                </tr>
+            }
+        </table>
+    </section>
+
 }
 else
 {
@@ -71,16 +115,46 @@ else
         </div>
     </div>
 }
-<form asp-action="Upload" asp-controller="Folder" method="post" enctype="multipart/form-data">
-    <input type="hidden" value="@ViewBag.CurrFolderId" name="folderId" />
-    <input type="file" name="uploads" multiple="multiple" />
-    <input type="submit" value="Upload" />
-</form>
-<form asp-action="AddFolder" asp-controller="Folder" method="post" enctype="multipart/form-data">
-    <input type="hidden" value="@ViewBag.CurrFolderId" name="folderId" />
-    <input type="text" name="newFolderName" />
-    <input type="submit" value="Create folder" />
-</form>
+<!-- Modal -->
+<div class="modal fade" id="fileUpload" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">File Upload</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form class="upload" asp-action="Upload" asp-controller="Folder" method="post" enctype="multipart/form-data">
+                    <input type="hidden" value="@ViewBag.CurrFolderId" name="folderId" />
+                    <input type="file" name="uploads" multiple="multiple" />
+                    <input type="submit" value="Upload" />
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="folderCreate" tabindex="-1" role="dialog" aria-labelledby="cfTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cfTitle">Create new folder</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form class="addfolder" asp-action="AddFolder" asp-controller="Folder" method="post" enctype="multipart/form-data">
+                    <input type="hidden" value="@ViewBag.CurrFolderId" name="folderId" />
+                    <input type="text" name="newFolderName" />
+                    <input type="submit" value="Create folder" />
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     function OpenFolder(id) {
         $.get({

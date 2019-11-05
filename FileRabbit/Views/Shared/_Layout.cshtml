@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@using System.Security.Claims
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -7,6 +8,8 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" />
     <link rel="stylesheet" href="~/css/dropzone.css" />
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
     <header>
@@ -22,20 +25,22 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
                         @if (User.Identity.IsAuthenticated)
                         {
                             <li class="nav-item">
-                                @User.Identity.Name
+                                <a class="nav-link text-dark" asp-controller="Account" asp-action="LogOff">Sign out</a>
+                            </li>
+                            <li class="nav-item user">
+                                @{
+                                    var parms = new Dictionary<string, string>
+                                                                                                {
+                                        { "folderId", User.FindFirstValue(ClaimTypes.NameIdentifier) },
+                                    };
+                                }
+                                <a class="nav-link text-dark" asp-controller="Folder" asp-action="Watch" asp-all-route-data="parms"><i class="icon material-icons">account_circle</i> @User.Identity.Name</a>
                             </li>
 
-                            <li class="nav-item">
-                                <form method="post" asp-controller="Account" asp-action="LogOff">
-                                    <input type="submit" value="Sign out" />
-                                </form>
-                            </li>
+
                         }
                         else
                         {
@@ -51,15 +56,16 @@
             </div>
         </nav>
     </header>
-    <div class="container">
+    <div class="body-box container">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/dropzone.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.form/4.2.2/jquery.form.min.js" integrity="sha384-FzT3vTVGXqf7wRfy8k4BiyzvbNfeYjK+frTVqZeNDFl8woCbF0CYG6g2fMEFFo/i" crossorigin="anonymous"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
     @RenderSection("Scripts", required: false)
 </body>
 </html>

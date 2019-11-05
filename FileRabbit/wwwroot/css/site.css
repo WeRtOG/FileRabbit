@@ -29,6 +29,9 @@ a {
 html {
   font-size: 14px;
 }
+body {
+    height: 100%;
+}
 @media (min-width: 768px) {
   html {
     font-size: 16px;
@@ -70,9 +73,10 @@ body {
   line-height: 60px; /* Vertically center the text there */
 }
 .navbar {
-    background: rgb(135, 209, 75) !important;
+    background: #24C6DC; /* fallback for old browsers */
+    background: -webkit-linear-gradient(to right, #514A9D, #24C6DC); /* Chrome 10-25, Safari 5.1-6 */
+    background: linear-gradient(to right, #514A9D, #24C6DC) !important; /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
     border: none !important;
-    box-shadow: 0px 5px 0px 0px rgba(135, 209, 75,0.32) !important;
 }
 .text-center {
     color: rgb(214, 214, 214);
@@ -82,5 +86,276 @@ body {
     height: 100% !important;
 }
 body, html, .container, .pb-3 {
-    height: calc(100% - 32px);
+    height: 100%;
+}
+form .ui-startworking {
+    background: rgba(74, 117, 157, 1);
+    color: white;
+    border: none;
+    outline: none;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 20px;
+    padding-right: 20px;
+    outline: none;
+    border: none;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+form .ui-startworking:hover {
+    opacity: .8;
+}
+form .ui-startworking:active {
+    opacity: .6;
+}
+.navbar-collapse {
+    height: 100%;
+}
+.navbar-collapse collapse {
+    height: 100%;
+}
+.navbar-nav {
+    justify-content: flex-end;
+}
+.nav-item {
+    height: 60px;
+    width: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.container {
+    margin: 0;
+    padding: 0;
+    margin-right: 0;
+    padding-right: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+    height: 100%;
+}
+.pb-3 {
+    height: 100%;
+    overflow: hidden !important;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    bottom: 0;
+}
+.body-box {
+    margin-top: -16px;
+    height: calc(100% - 73px);
+    overflow: auto;
+    position: relative;
+    box-sizing: border-box;
+}
+.auth-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+.auth-wrapper .auth {
+    width: 500px;
+}
+.auth-wrapper h1 {
+    text-align: center;
+}
+.auth-wrapper .auth .submit {
+    display: block;
+    width: 100%;
+    border-radius: 0px;
+    background: rgba(74, 117, 157, 1);
+    border: none;
+    color: #fff;
+    transition: all 0.3s ease;
+    outline: none;
+    padding: 10px;
+    -webkit-text-fill-color: white;
+    border-radius: 5px;
+}
+.auth-wrapper .auth .submit:hover {
+    opacity: .8;
+}
+.auth-wrapper .auth .input {
+    display: block;
+    width: 100%;
+    border-radius: 5px;
+    background: #444;
+    border: none;
+    color: #fff;
+    transition: all 0.3s ease;
+    outline: none;
+    padding: 10px;
+    -webkit-text-fill-color: white;
+}
+.auth-wrapper .auth .input:hover {
+    background: #4d4d4d;
+}
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+    border: none;
+    -webkit-box-shadow: 0 0 0px 1000px #454545 inset;
+    background: none;
+    color: white;
+}
+.auth-header {
+    text-align: center;
+}
+.navbar {
+    padding: 0;
+}
+.navbar-brand {
+    margin: 10px;
+}
+.nav-item {
+    width: 100px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border-radius: 5px;
+}
+.nav-item a {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white !important;
+}
+.nav-item *, .nav-item:hover *, .nav-item *:hover {
+    color: white !important;
+}
+.nav-item:hover {
+    background: rgba(0,0,0,.1);
+}
+.nav-item form, .nav-item input {
+    height: 100%;
+    width: 100%;
+    border: none;
+    background: none;
+    outline: none;
+}
+.nav-item.user {
+    width: 150px;
+    background: rgba(0,0,0,.03);
+}
+.nav-item.user a {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+}
+.nav-item.user a img {
+    margin-right: 5px;
+}
+.file-table {
+    width: 100%;
+}
+.path-separator i {
+    opacity: .5;
+    font-weight: 300;
+    font-size: 18px;
+}
+.path-separator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.action-bar {
+    width: 100%;
+    background: #444;
+    display: flex;
+}
+.action-bar .path {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+.action-bar .path a {
+    margin: 0;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 5px;
+    padding-right: 5px;
+    box-sizing: border-box;
+}
+.action-bar .actions {
+    display: flex;
+}
+.action-bar button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    border: none;
+    background: none;
+    color: white;
+    font-weight: 200;
+    padding: 10px;
+    border-radius: 100%;
+    transition: all 0.3s ease;
+    outline: none;
+}
+.action-bar button:hover {
+    background: rgba(255,255,255,.1);
+}
+.action-bar button.inactive {
+    opacity: .5;
+}
+.action-bar button.inactive:hover {
+    background: transparent;
+    cursor: default;
+}
+.file-bar {
+    height: 100%;
+    overflow: auto;
+    display: block;
+    width: 100%;
+}
+.file-table td, .file-table th {
+    padding: 10px;
+}
+.file-table tr[ondblclick] {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+.file-table tr[ondblclick]:hover {
+    background: rgba(255,255,255,.1);
+}
+.file-table tr.selected[ondblclick] {
+    background: rgba(255,255,255,.2);
+}
+.file-table td.icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: -webkit-linear-gradient(rgba(255,255,255,1), rgba(255,255,255,.2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    background: #3d3d3d;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: #888;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
 }

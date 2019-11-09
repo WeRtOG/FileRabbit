@@ -18,6 +18,7 @@ namespace FileRabbit.BLL.Interfaces
         ICollection<ElementVM> GetElementsFromFolder(FolderVM folder, string userId);
         Stack<FolderShortInfoVM> GetFolderPath(string currFolderId);
         MemoryStream CreateArchive(string currFolderId, string userId, string[] foldersId, string[] filesId);
+        bool RemoveFilesAndFolders(string userId, string[] foldersId, string[] filesId);
         bool CheckAccess(FolderVM folder, string currentId);
         bool CheckAccess(FileVM file, string currentId);
     }

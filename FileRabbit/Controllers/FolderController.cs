@@ -97,5 +97,12 @@ namespace FileRabbit.PL.Controllers
                 return BadRequest("This folder already exists.");
             return new ObjectResult(newFolder);
         }
+
+        // this action removes selected files and folders and return the result removing result
+        public IActionResult Delete(string[] foldersId, string[] filesId)
+        {
+            bool success = fileSystemService.RemoveFilesAndFolders(User.FindFirstValue(ClaimTypes.NameIdentifier), foldersId, filesId);
+            return new ObjectResult(success);
+        }
     }
 }

@@ -24,9 +24,9 @@ namespace FileRabbit.DAL.Repositories
 
         public void Delete(string id)
         {
-            T folder = _dbSet.Find(id);
-            if (folder != null)
-                _dbSet.Remove(folder);
+            T item = _dbSet.Find(id);
+            if (item != null)
+                _dbSet.Remove(item);
         }
 
         public IEnumerable<T> Find(Func<T, bool> predicate)

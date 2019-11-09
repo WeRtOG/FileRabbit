@@ -293,6 +293,51 @@ namespace FileRabbit.BLL.Services
             zipStream.CloseEntry();
         }
 
+        // this method removes needed files and folders
+        public bool RemoveFilesAndFolders(string userId, string[] foldersId, string[] filesId)
+        {
+            bool success = true;
+            foreach(var id in foldersId)
+            {
+                Folder folder = _database.Folders.Get(id);
+                FolderVM vm = new FolderVM { IsShared = folder.IsShared, OwnerId = folder.OwnerId };
+                if (CheckAccess(vm, userId))
+                {
+                    try
+                    {
+                        Directory.Delete(folder.Path, true);
+                        _database.Folders.Delete(id);
+                        _database.Save();
+                    }
+                    catch
+                    {
+                        success = false;
+                    }
+                }
+            }
+
+            foreach (var id in filesId)
+            {
+                DAL.Entities.File file = _database.Files.Get(id);
+                FileVM vm = new FileVM { IsShared = file.IsShared, OwnerId = _database.Folders.Get(file.FolderId).OwnerId };
+                if (CheckAccess(vm, userId))
+                {
+                    try
+                    {
+                        System.IO.File.Delete(file.Path);
+                        _database.Folders.Delete(id);
+                        _database.Save();
+                    }
+                    catch
+                    {
+                        success = false;
+                    }
+                }
+            }
+
+            return success;
+        }
+
         // this method checks access to the needed folder by current user
         public bool CheckAccess(FolderVM folder, string currentId)
         {

@@ -31,11 +31,12 @@ namespace FileRabbit.PL.Controllers
                 return RedirectToAction("Login", "Account");
 
             FolderVM folder = fileSystemService.GetFolderById(folderId);
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             // check access to needed folder
-            if (fileSystemService.CheckAccess(folder, User.FindFirstValue(ClaimTypes.NameIdentifier)))
+            if (fileSystemService.CheckAccess(folder, userId))
             {
-                List<ElementVM> models = fileSystemService.GetElementsFromFolder(fileSystemService.GetFolderById(folderId)).ToList();
+                List<ElementVM> models = fileSystemService.GetElementsFromFolder(fileSystemService.GetFolderById(folderId), userId).ToList();
                 Stack<FolderShortInfoVM> folderPath = fileSystemService.GetFolderPath(folderId);
 
                 ViewBag.FolderPath = folderPath;
@@ -55,6 +56,7 @@ namespace FileRabbit.PL.Controllers
 
         [HttpPost]
         [DisableRequestSizeLimit]
+        // this action uploads the collection of files to the hard drive and returns the upload result
         public async Task<IActionResult> Upload(IFormFileCollection uploads, string folderId)
         {
             List<ElementVM> elements = (await fileSystemService.UploadFiles(uploads, fileSystemService.GetFolderById(folderId))).ToList();
@@ -62,6 +64,7 @@ namespace FileRabbit.PL.Controllers
             return new ObjectResult(elements);
         }
 
+        // this action returns a single file to download
         public IActionResult Download(string fileId)
         {
             FileVM file = fileSystemService.GetFileById(fileId);
@@ -71,6 +74,7 @@ namespace FileRabbit.PL.Controllers
                 return StatusCode(405, "Error code: 405. You don't have access to this file.");
         }
 
+        // this action returns an archive with multiple files and folders to download
         public IActionResult DownloadMultiple(string currFolderId, string[] foldersId, string[] filesId)
         {
             //currFolderId = "1244ded8-e7e5-4cb4-845a-10dad1c04982";
@@ -82,6 +86,7 @@ namespace FileRabbit.PL.Controllers
             return File(ms, "application/archive", Guid.NewGuid() + ".zip");
         }
 
+        // this action creates a new folder and returns the creating result
         [HttpPost]
         public IActionResult AddFolder(string folderId, string newFolderName)
         {

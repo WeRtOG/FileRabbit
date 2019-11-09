@@ -15,7 +15,7 @@ namespace FileRabbit.BLL.Interfaces
         void CreateFolder(string ownerId);
         FolderVM GetFolderById(string id);
         FileVM GetFileById(string id);
-        ICollection<ElementVM> GetElementsFromFolder(FolderVM folder);
+        ICollection<ElementVM> GetElementsFromFolder(FolderVM folder, string userId);
         Stack<FolderShortInfoVM> GetFolderPath(string currFolderId);
         MemoryStream CreateArchive(string currFolderId, string userId, string[] foldersId, string[] filesId);
         bool CheckAccess(FolderVM folder, string currentId);

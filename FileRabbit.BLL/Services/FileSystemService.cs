@@ -29,7 +29,7 @@ namespace FileRabbit.BLL.Services
         }
 
         // this method returns all folders and files that are contained in the needed folder
-        public ICollection<ElementVM> GetElementsFromFolder(FolderVM folderVM)
+        public ICollection<ElementVM> GetElementsFromFolder(FolderVM folderVM, string userId)
         {
             DirectoryInfo dir = new DirectoryInfo(folderVM.Path);
             FileInfo[] files;
@@ -46,35 +46,45 @@ namespace FileRabbit.BLL.Services
             foreach (var elem in dirs)
             {
                 string s = childFolders[0].Path;
-                ElementVM model = new ElementVM
+                Folder folder = childFolders.Find(f => f.Path == elem.FullName);
+                if (CheckAccess(new FolderVM { OwnerId = folder.OwnerId, IsShared = folder.IsShared }, userId))
                 {
-                    Id = childFolders.Find(f => f.Path == elem.FullName).Id,
-                    IsFolder = true,
-                    Type = ElementVM.FileType.Folder,
-                    ElemName = elem.Name,
-                    LastModified = elem.LastWriteTime.ToShortDateString(),
-                    Size = null
-                };
-                models.Add(model);
+                    ElementVM model = new ElementVM
+                    {
+                        Id = folder.Id,
+                        IsFolder = true,
+                        Type = ElementVM.FileType.Folder,
+                        ElemName = elem.Name,
+                        LastModified = elem.LastWriteTime.ToShortDateString(),
+                        Size = null
+                    };
+
+                    models.Add(model);
+                }
             }
 
             foreach (var elem in files)
             {
-                // для более удобного отображения размера файла, вызовем функцию преобразования
-                Tuple<double, ElementVM.Unit> size = new Tuple<double, ElementVM.Unit>(elem.Length, ElementVM.Unit.B);
-                size = ElementHelperClass.Recount(size);
-                ElementVM.FileType type = ElementHelperClass.DefineFileType(elem.Extension);
-
-                ElementVM model = new ElementVM
+                DAL.Entities.File file = childFiles.Find(f => f.Path == elem.FullName);
+                FileVM vm = new FileVM { IsShared = file.IsShared, OwnerId = _database.Folders.Get(file.FolderId).OwnerId };
+                if (CheckAccess(vm, userId))
                 {
-                    Id = childFiles.Find(f => f.Path == elem.FullName).Id,
-                    IsFolder = false,
-                    Type = type,
-                    ElemName = elem.Name,
-                    LastModified = elem.LastWriteTime.ToShortDateString(),
-                    Size = size
-                };
-                models.Add(model);
+                    // for a more convenient display of file size, call the conversion function
+                    Tuple<double, ElementVM.Unit> size = new Tuple<double, ElementVM.Unit>(elem.Length, ElementVM.Unit.B);
+                    size = ElementHelperClass.Recount(size);
+                    ElementVM.FileType type = ElementHelperClass.DefineFileType(elem.Extension);
+
+                    ElementVM model = new ElementVM
+                    {
+                        Id = childFiles.Find(f => f.Path == elem.FullName).Id,
+                        IsFolder = false,
+                        Type = type,
+                        ElemName = elem.Name,
+                        LastModified = elem.LastWriteTime.ToShortDateString(),
+                        Size = size
+                    };
+                    models.Add(model);
+                }
             }
 
             return models;
@@ -154,7 +164,7 @@ namespace FileRabbit.BLL.Services
         // this method creates a new root folder on the hard drive and saves it in the database
         public void CreateFolder(string ownerId)
         {
-            // создаём папку нового пользователя в хранилище
+            // create a folder for new user
             Directory.CreateDirectory(pathRoot + "\\" + ownerId);
             Folder newFolder = new Folder
             {
@@ -219,6 +229,15 @@ namespace FileRabbit.BLL.Services
             {
                 zipStream.SetLevel(0);
                 int folderOffset = parentFolder.Path.Length + (parentFolder.Path.EndsWith("\\") ? 0 : 1);
+
+                foreach (var id in filesId)
+                {
+                    DAL.Entities.File file = _database.Files.Get(id);
+                    FileVM vm = new FileVM { IsShared = file.IsShared, OwnerId = _database.Folders.Get(file.FolderId).OwnerId };
+                    if (CheckAccess(vm, userId))
+                        CompressFile(file, zipStream, folderOffset);
+                }
+
                 foreach (var id in foldersId)
                 {
                     Folder folder = _database.Folders.Get(id);
@@ -227,36 +246,13 @@ namespace FileRabbit.BLL.Services
                         CompressFolder(folder, userId, zipStream, folderOffset);
                 }
 
-                foreach (var id in filesId)
-                {
-                    DAL.Entities.File file = _database.Files.Get(id);
-                    FileVM vm = new FileVM { IsShared = file.IsShared, OwnerId = _database.Folders.Get(file.FolderId).OwnerId };
-                    if (CheckAccess(vm, userId))
-                    {
-                        FileInfo fi = new FileInfo(file.Path);
-                        string entryName = file.Path.Substring(folderOffset);
-                        entryName = ZipEntry.CleanName(entryName);
-
-                        ZipEntry newEntry = new ZipEntry(entryName);
-                        newEntry.DateTime = fi.LastWriteTime;
-                        newEntry.Size = fi.Length;
-                        zipStream.PutNextEntry(newEntry);
-
-                        var buffer = new byte[4096];
-                        using (FileStream fsInput = System.IO.File.OpenRead(file.Path))
-                        {
-                            StreamUtils.Copy(fsInput, zipStream, buffer);
-                        }
-                        zipStream.CloseEntry();
-                    }
-                }
                 zipStream.IsStreamOwner = false;
             }
             outputMemStream.Position = 0;
             return outputMemStream;
         }
 
-        // Recursively compresses a folder structure
+        // this method recursively compresses a folder structure
         private void CompressFolder(Folder folder, string userId, ZipOutputStream zipStream, int folderOffset)
         {
             List<Folder> childFolders = _database.Folders.Find(f => f.ParentFolderId == folder.Id).ToList();
@@ -264,25 +260,9 @@ namespace FileRabbit.BLL.Services
 
             foreach (var childFile in childFiles)
             {
-                FileVM vm = new FileVM { IsShared = childFile.IsShared, OwnerId = _database.Folders.Get(childFile.FolderId).OwnerId };
-                if (CheckAccess(vm, userId))
-                {
-                    FileInfo fi = new FileInfo(childFile.Path);
-                    string entryName = childFile.Path.Substring(folderOffset);
-                    entryName = ZipEntry.CleanName(entryName);
-
-                    ZipEntry newEntry = new ZipEntry(entryName);
-                    newEntry.DateTime = fi.LastWriteTime;
-                    newEntry.Size = fi.Length;
-                    zipStream.PutNextEntry(newEntry);
-
-                    var buffer = new byte[4096];
-                    using (FileStream fsInput = System.IO.File.OpenRead(childFile.Path))
-                    {
-                        StreamUtils.Copy(fsInput, zipStream, buffer);
-                    }
-                    zipStream.CloseEntry();
-                }
+                FileVM file = new FileVM { IsShared = childFile.IsShared, OwnerId = _database.Folders.Get(childFile.FolderId).OwnerId };
+                if (CheckAccess(file, userId))
+                    CompressFile(childFile, zipStream, folderOffset);
             }
 
             foreach (var childFolder in childFolders)
@@ -291,6 +271,26 @@ namespace FileRabbit.BLL.Services
                 if (CheckAccess(vm, userId))
                     CompressFolder(childFolder, userId, zipStream, folderOffset);
             }
+        }
+
+        // this method compresses a file
+        private void CompressFile(DAL.Entities.File file, ZipOutputStream zipStream, int folderOffset)
+        {
+            FileInfo fi = new FileInfo(file.Path);
+            string entryName = file.Path.Substring(folderOffset);
+            entryName = ZipEntry.CleanName(entryName);
+
+            ZipEntry newEntry = new ZipEntry(entryName);
+            newEntry.DateTime = fi.LastWriteTime;
+            newEntry.Size = fi.Length;
+            zipStream.PutNextEntry(newEntry);
+
+            var buffer = new byte[4096];
+            using (FileStream fsInput = System.IO.File.OpenRead(file.Path))
+            {
+                StreamUtils.Copy(fsInput, zipStream, buffer);
+            }
+            zipStream.CloseEntry();
         }
 
         // this method checks access to the needed folder by current user

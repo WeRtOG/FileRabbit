@@ -47,7 +47,7 @@ namespace FileRabbit.BLL.BusinessModels
         public static string DefineFileName(string path)
         {
             string result;
-            result = path.Substring(path.LastIndexOf("//") + 2);
+            result = path.Substring(path.LastIndexOf("\\") + 1);
             return result;
         }
 

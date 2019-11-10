@@ -293,7 +293,7 @@ namespace FileRabbit.BLL.Services
             zipStream.CloseEntry();
         }
 
-        // this method removes needed files and folders
+        // this method removes desired files and folders
         public bool RemoveFilesAndFolders(string userId, string[] foldersId, string[] filesId)
         {
             bool success = true;
@@ -336,6 +336,64 @@ namespace FileRabbit.BLL.Services
             }
 
             return success;
+        }
+
+        // this method renames the desired folder
+        public bool RenameFolder(string newName, string folderId)
+        {
+            Folder folder = _database.Folders.Get(folderId);
+            string oldPath = folder.Path;
+            string newPath = oldPath.Substring(0, oldPath.LastIndexOf('\\') + 1) + newName;
+            folder.Path = newPath;
+            if (!Directory.Exists(newPath))
+            {
+                Directory.Move(oldPath, newPath);
+                _database.Folders.Update(folder);
+                ChangeChildrenPath(folder, oldPath, newPath);
+                _database.Save();
+                return true;
+            }
+            else 
+                return false;
+        }
+
+        // this method changes the path of the children of the folder recursively in the database
+        private void ChangeChildrenPath(Folder folder, string oldPath, string newPath)
+        {
+            List<Folder> childFolders = _database.Folders.Find(f => f.ParentFolderId == folder.Id).ToList();
+            List<DAL.Entities.File> childFiles = _database.Files.Find(f => f.FolderId == folder.Id).ToList();
+
+            foreach(var file in childFiles)
+            {
+                file.Path = file.Path.Replace(oldPath, newPath);
+                _database.Files.Update(file);
+            }
+
+            foreach(var childFolder in childFolders)
+            {
+                childFolder.Path = childFolder.Path.Replace(oldPath, newPath);
+                _database.Folders.Update(childFolder);
+                ChangeChildrenPath(childFolder, oldPath, newPath);
+            }
+        }
+
+        // this method renames the desired file
+        public bool RenameFile(string newName, string fileId)
+        {
+            DAL.Entities.File file = _database.Files.Get(fileId);
+            string oldPath = file.Path;
+            string extension = ElementHelperClass.DefineFileExtension(oldPath);
+            string newPath = oldPath.Substring(0, oldPath.LastIndexOf('\\') + 1) + newName + extension;
+            file.Path = newPath;
+            if (!System.IO.File.Exists(newPath))
+            {
+                System.IO.File.Move(oldPath, newPath);
+                _database.Files.Update(file);
+                _database.Save();
+                return true;
+            }
+            else
+                return false;
         }
 
         // this method checks access to the needed folder by current user

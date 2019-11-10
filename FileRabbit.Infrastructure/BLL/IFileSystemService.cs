@@ -19,6 +19,8 @@ namespace FileRabbit.BLL.Interfaces
         Stack<FolderShortInfoVM> GetFolderPath(string currFolderId);
         MemoryStream CreateArchive(string currFolderId, string userId, string[] foldersId, string[] filesId);
         bool RemoveFilesAndFolders(string userId, string[] foldersId, string[] filesId);
+        bool RenameFolder(string newName, string folderId);
+        bool RenameFile(string newName, string fileId);
         bool CheckAccess(FolderVM folder, string currentId);
         bool CheckAccess(FileVM file, string currentId);
     }

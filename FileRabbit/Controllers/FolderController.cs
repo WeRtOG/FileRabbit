@@ -98,11 +98,30 @@ namespace FileRabbit.PL.Controllers
             return new ObjectResult(newFolder);
         }
 
-        // this action removes selected files and folders and return the result removing result
+        // this action removes the selected files and folders and returns the result removing result
         public IActionResult Delete(string[] foldersId, string[] filesId)
         {
             bool success = fileSystemService.RemoveFilesAndFolders(User.FindFirstValue(ClaimTypes.NameIdentifier), foldersId, filesId);
             return new ObjectResult(success);
+        }
+
+        // this action renames the selected file or folder and returns the result of renaming
+        public IActionResult Rename(string newName, string elementId, bool isFolder)
+        {
+            bool available;
+            if (isFolder)
+                available = fileSystemService.CheckAccess(fileSystemService.GetFolderById(elementId), User.FindFirstValue(ClaimTypes.NameIdentifier));
+            else
+                available = fileSystemService.CheckAccess(fileSystemService.GetFileById(elementId), User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            if (available)
+            {
+                bool success;
+                success = isFolder ? fileSystemService.RenameFolder(newName, elementId) : fileSystemService.RenameFile(newName, elementId);
+                return new ObjectResult(success);
+            }
+            else
+                return StatusCode(405, "Error code: 405. You don't have access to this " + (isFolder ? "folder" : "file") + " .");
         }
     }
 }

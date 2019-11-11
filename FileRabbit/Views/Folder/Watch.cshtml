@@ -8,12 +8,12 @@
         @foreach (var elem in ViewBag.FolderPath)
         {
             ViewBag.Link = @Url.Action("Watch", "Folder") + "?folderId=";
-            <a class="text-white path-separator anix" data-fx="move" data-hold="10">
+            <a class="text-white path-separator">
                 <i class="material-icons">
                     arrow_forward_ios
                 </i>
             </a>
-            <a class="text-white anix" data-fx="move" href="@ViewBag.Link@elem.Id">@elem.Name</a>
+            <a class="text-white" href="@ViewBag.Link@elem.Id">@elem.Name</a>
         }
     </div>
     <div class="actions">
@@ -54,8 +54,8 @@
 @if (ViewBag.Empty == false)
 {
     <section class="file-bar">
-        <table class="text-white file-table anix" data-fx="move" data-direction="down" data-hold="10">
-            <tr class="head-box">
+        <table class="text-white file-table">
+            <tr>
                 <th width="28"></th>
                 <th>Name</th>
                 <th>Last change</th>
@@ -63,7 +63,12 @@
             </tr>
             @foreach (var elem in Model)
             {
-                <tr class="drive-row" data-isfolder="@elem.IsFolder" data-id="@elem.Id">
+                if (elem.IsFolder)
+                    ViewBag.Link = @Url.Action("Watch", "Folder") + "?folderId=";
+                else
+                    ViewBag.Link = @Url.Action("Download", "Folder") + "?fileId=";
+
+                <tr ondblclick="window.location.href = '@ViewBag.Link' + '@elem.Id'">
                     @switch (elem.Type.ToString())
                     {
                         case "Document":
@@ -103,7 +108,7 @@
 }
 else
 {
-    <div class="text-center anix">
+    <div class="text-center">
         <div>
             <p class="text-white display-4">Your folder is empty...</p>
             <p class="text-white">Add new files to change it.</p>

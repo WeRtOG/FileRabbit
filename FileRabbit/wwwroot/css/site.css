@@ -257,30 +257,6 @@ select:-webkit-autofill:focus {
 }
 .file-table {
     width: 100%;
-    position: relative;
-}
-.file-bar::after {
-    width: 100%;
-    height: 100%;
-    content: "Drop your files here";
-    background: rgba(24,24,24,.8);
-    border: dashed 4px rgba(255,255,255,.2);
-    opacity: 1;
-    position: absolute;
-    left: 0;
-    top: 0;
-    color: white;
-    font-size: 64px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    visibility: collapse;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-.file-bar.drop::after {
-    opacity: 1;
-    visibility: visible;
 }
 .path-separator i {
     opacity: .5;
@@ -339,35 +315,25 @@ select:-webkit-autofill:focus {
     cursor: default;
 }
 .file-bar {
-    height: calc(100% - 30px);
+    height: 100%;
     overflow: auto;
-    overflow-x: hidden;
     display: block;
     width: 100%;
 }
-.file-table {
-    position: relative;
-}
-    .file-bar .head-box {
-        position: sticky;
-        top: 0;
-        position: -webkit-sticky;
-    }
 .file-table td, .file-table th {
     padding: 10px;
 }
-.file-table tr.drive-row {
+.file-table tr[ondblclick] {
     transition: all 0.3s ease;
     cursor: pointer;
 }
-.file-table tr.drive-row:hover {
+.file-table tr[ondblclick]:hover {
     background: rgba(255,255,255,.1);
 }
-.file-table tr.selected.drive-row {
+.file-table tr.selected[ondblclick] {
     background: rgba(255,255,255,.2);
 }
 .file-table td.icon {
-    width: 50px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -392,7 +358,4 @@ select:-webkit-autofill:focus {
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
     background: #555;
-}
-.anix {
-    opacity: 0;
 }

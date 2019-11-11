@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 using FileRabbit.PL.Models;
+using System.IO;
 
 namespace FileRabbit.PL.Controllers
 {
@@ -16,6 +17,8 @@ namespace FileRabbit.PL.Controllers
 
         public HomeController(ILogger<HomeController> logger)
         {
+            if (!Directory.Exists("C:\\FileRabbitStorage"))
+                Directory.CreateDirectory("C:\\FileRabbitStorage");
             _logger = logger;
         }
 

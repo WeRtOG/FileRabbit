@@ -14,8 +14,6 @@ namespace FileRabbit.PL
     {
         public static void Main(string[] args)
         {
-            if (!Directory.Exists("C://FileRabbitStore"))
-                Directory.CreateDirectory("C://FileRabbitStore");
             CreateHostBuilder(args).Build().Run();
         }
 

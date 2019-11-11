@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,8 +15,12 @@ namespace FileRabbit.BLL.Interfaces
         void CreateFolder(string ownerId);
         FolderVM GetFolderById(string id);
         FileVM GetFileById(string id);
-        ICollection<ElementVM> GetElementsFromFolder(FolderVM folder);
+        ICollection<ElementVM> GetElementsFromFolder(FolderVM folder, string userId);
         Stack<FolderShortInfoVM> GetFolderPath(string currFolderId);
+        MemoryStream CreateArchive(string currFolderId, string userId, string[] foldersId, string[] filesId);
+        bool RemoveFilesAndFolders(string userId, string[] foldersId, string[] filesId);
+        bool RenameFolder(string newName, string folderId);
+        bool RenameFile(string newName, string fileId);
         bool CheckAccess(FolderVM folder, string currentId);
         bool CheckAccess(FileVM file, string currentId);
     }

@@ -259,7 +259,10 @@ select:-webkit-autofill:focus {
     width: 100%;
     position: relative;
 }
-.file-bar::after {
+.file-table tr {
+    height: 30px;
+}
+    .file-bar::after {
     width: 100%;
     height: 100%;
     content: "Drop your files here";
@@ -395,4 +398,10 @@ select:-webkit-autofill:focus {
 }
 .anix {
     opacity: 0;
+}
+.file-bar .no-data {
+    height: 100%;
+}
+.file-bar .text-center {
+    height: 100%;
 }

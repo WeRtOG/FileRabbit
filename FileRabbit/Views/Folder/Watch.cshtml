@@ -23,7 +23,7 @@
             </i>
         </button>
         <button class="newfolder">
-            <i class="material-icons"  data-toggle="modal" data-target="#folderCreate">
+            <i class="material-icons" data-toggle="modal" data-target="#folderCreate">
                 create_new_folder
             </i>
         </button>
@@ -33,7 +33,7 @@
             </i>
         </button>
         <button class="rename inactive">
-            <i class="material-icons">
+            <i class="material-icons" data-toggle="modal" data-target="#renameWindow">
                 create
             </i>
         </button>
@@ -50,11 +50,10 @@
     </div>
 </section>
 
-
-@if (ViewBag.Empty == false)
-{
-    <section class="file-bar">
-        <table class="text-white file-table anix" data-fx="move" data-direction="down" data-hold="10">
+<section class="file-bar">
+    <table class="text-white file-table anix" data-fx="move" data-direction="down" data-hold="10">
+        @if (ViewBag.Empty == false)
+        {
             <tr class="head-box">
                 <th width="28"></th>
                 <th>Name</th>
@@ -97,19 +96,23 @@
                     }
                 </tr>
             }
-        </table>
-    </section>
-
-}
-else
-{
-    <div class="text-center anix">
-        <div>
-            <p class="text-white display-4">Your folder is empty...</p>
-            <p class="text-white">Add new files to change it.</p>
-        </div>
-    </div>
-}
+        }
+        else
+        {
+    <tr class="no-data">
+        <td>
+            <div class="text-center anix">
+                <div>
+                    <p class="text-white display-4">Your folder is empty...</p>
+                    <p class="text-white">Add new files to change it.</p>
+                </div>
+            </div>
+        </td>
+        
+    </tr>
+        }
+    </table>
+</section>
 <!-- Modal -->
 <div class="modal fade" id="fileUpload" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
@@ -144,6 +147,26 @@ else
                     <input type="hidden" value="@ViewBag.CurrFolderId" name="folderId" />
                     <input type="text" name="newFolderName" />
                     <input type="submit" value="Create folder" />
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="renameWindow" tabindex="-1" role="dialog" aria-labelledby="rnTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="rnTitle">Rename</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form class="renameitem" asp-action="Rename" asp-controller="Folder" method="post" enctype="multipart/form-data">
+                    <input type="hidden" class="elementId" value="" name="elementId" />
+                    <input type="hidden" class="isFolder" value="" name="isFolder" />
+                    <input type="text" name="newName" />
+                    <input type="submit" value="Rename" />
                 </form>
             </div>
         </div>

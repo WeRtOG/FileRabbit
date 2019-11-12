@@ -33,7 +33,7 @@
                             <li class="nav-item user">
                                 @{
                                     var parms = new Dictionary<string, string>
-                                                                                                {
+                                                                                                                    {
                                         { "folderId", User.FindFirstValue(ClaimTypes.NameIdentifier) },
                                     };
                                 }
@@ -68,6 +68,7 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/transit.js"></script>
     <script src="~/js/anix.js"></script>
+    <script src="https://rawgit.com/makeusabrew/bootbox/f3a04a57877cab071738de558581fbc91812dce9/bootbox.js"></script>
     @RenderSection("Scripts", required: false)
 </body>
 </html>

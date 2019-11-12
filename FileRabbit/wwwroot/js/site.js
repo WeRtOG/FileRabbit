@@ -2,100 +2,16 @@
 // for details on configuring this project to bundle and minify static web assets.
 
 // Write your JavaScript code.
-function sortTable(n, table) {
-    var rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
-    switching = true;
-    //Set the sorting direction to ascending:
-    dir = "asc";
-    /*Make a loop that will continue until
-    no switching has been done:*/
-    while (switching) {
-        //start by saying: no switching is done:
-        switching = false;
-        rows = table.rows;
-        /*Loop through all table rows (except the
-        first, which contains table headers):*/
-        for (i = 1; i < (rows.length - 1); i++) {
-            //start by saying there should be no switching:
-            shouldSwitch = false;
-            /*Get the two elements you want to compare,
-            one from current row and one from the next:*/
-            x = rows[i].getElementsByTagName("TD")[n];
-            y = rows[i + 1].getElementsByTagName("TD")[n];
-            /*check if the two rows should switch place,
-            based on the direction, asc or desc:*/
-            if (dir == "asc") {
-                if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
-                    //if so, mark as a switch and break the loop:
-                    shouldSwitch = true;
-                    break;
-                }
-            } else if (dir == "desc") {
-                if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
-                    //if so, mark as a switch and break the loop:
-                    shouldSwitch = true;
-                    break;
-                }
-            }
-        }
-        if (shouldSwitch) {
-            /*If a switch has been marked, make the switch
-            and mark that a switch has been done:*/
-            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-            switching = true;
-            //Each time a switch is done, increase this count by 1:
-            switchcount++;
-        } else {
-            /*If no switching has been done AND the direction is "asc",
-            set the direction to "desc" and run the while loop again.*/
-            if (switchcount == 0 && dir == "asc") {
-                dir = "asc";
-                switching = true;
-            }
-        }
-    }
-    var folders = [];
-    $(table).find("tr").each(function (i) {
-        var isfolder = $(this).attr("data-isfolder") === "True" || $(this).attr("data-isfolder") === undefined;
-
-        if (isfolder) {
-            folders.push($(this));
+function updateTable() {
+    $(".file-bar").load(window.location.href + " .file-table", function () {
+        anix_do($("html").find(".anix"));
+        $("html").find("table .no-data").parent().parent().css("min-height", "100%");
+        if ($("html").find("table .no-data").length > 0) {
+            $(".actions .active").addClass("inactive");
+            $(".actions .active").removeClass("active");
         }
     });
-    $(table).prepend(folders);
-    console.log(folders);
 }
-
-var sizeTypes = [
-    "B",
-    "KB",
-    "MB",
-    "GB",
-    "TB"
-];
-var iconTypes = [
-    "insert_drive_file",
-    "insert_drive_file",
-    "image",
-    "movie",
-    "music_note",
-    "folder",
-    "insert_drive_file"
-];
-function AddFileRow(element) {
-    var newtr = '<tr class="drive-row" data-isfolder="False" data-id="' + element.id + '"><td class="icon"><i class="material-icons">' + iconTypes[element.type] + '</i></td><td>' + element.elemName + '</td><td>' + element.lastModified + '</td><td>' + element.size.item1 + ' ' + sizeTypes[element.size.item2] + '</td></tr>';
-    $(".file-table").append(newtr);
-    sortTable(1, $(".file-table")[0]);
-}
-function AddFolderRow(element) {
-    var newtr = '<tr class="drive-row" data-isfolder="True" data-id="' + element.id + '">';
-    newtr += '<td class="icon"><i class="material-icons">folder</i></td><td>' + element.elemName + '</td><td>' + element.lastModified + '</td><td>-</td>';
-    $(".file-table").append(newtr);
-    sortTable(1, $("body").find(".file-table")[0]);
-}
-$(function () {
-    sortTable(1, $("body").find(".file-table")[0]);
-});
 function Upload(files, folderId, token) {
     const formData = new FormData();
 
@@ -111,11 +27,8 @@ function Upload(files, folderId, token) {
         method: 'POST',
         body: formData,
     }).then(response => {
-        response.json().then(function (data) {
-            data.forEach(function (element) {
-                AddFileRow(element);
-            });
-        });
+        updateTable();
+        console.log(response);
     });
 }
 $(".file-bar").on("dragover", function (event) {
@@ -147,21 +60,35 @@ $(".file-bar").on("drop", function (e) {
     }
 });
 $('form.addfolder').ajaxForm(function (response) {
-    AddFolderRow(response);
+    updateTable();
     $("#folderCreate").modal("hide");
 });
 $('form.upload').ajaxForm(function (response) {
-    response.forEach(function (element) {
-        AddFileRow(element);
-    });
-    
+    updateTable();
     $("#fileUpload").modal("hide");
 });
-//[{"id":"21ac6039-8ee7-4c32-a894-8ac6e2178f01","isFolder":false,"type":1,"elemName":"Компьютерная графика.docx","lastModified":"05.11.2019","size":{"item1":225.4,"item2":1}}]
-$("html").on("click", ".file-table tr.drive-row", function () {
-    $(this).toggleClass("selected");
+$('form.renameitem').ajaxForm(function (response) {
+    updateTable();
+    $("#renameWindow").modal("hide");
+});
+var $_GET = {};
+$(function () {
+    $("table .no-data").parent().parent().css("min-height", "100%");
+    document.location.search.replace(/\??(?:([^=]+)=([^&]*)&?)/g, function () {
+        function decode(s) {
+            return decodeURIComponent(s.split("+").join(" "));
+        }
 
+        $_GET[decode(arguments[1])] = decode(arguments[2]);
+    });
+})
+function ActionBarLogic() {
     var count = $(".file-table tr.selected").length;
+    if (count == 1) {
+        $(".renameitem .elementId").attr("value", $(".file-table tr.drive-row.selected").attr("data-id"));
+        $(".renameitem .isFolder").attr("value", $(".file-table tr.drive-row.selected").attr("data-isfolder"));
+        $(".renameitem [name=newName]").attr("value", $($(".file-table tr.drive-row.selected").find("td")[1]).text().replace(/\.[^/.]+$/, ""));
+    }
     if (count > 0) {
         $(".actions .inactive").addClass("active");
         $(".actions .inactive").removeClass("inactive");
@@ -172,6 +99,108 @@ $("html").on("click", ".file-table tr.drive-row", function () {
     } else {
         $(".actions .active").addClass("inactive");
         $(".actions .active").removeClass("active");
+    }
+}
+//[{"id":"21ac6039-8ee7-4c32-a894-8ac6e2178f01","isFolder":false,"type":1,"elemName":"Компьютерная графика.docx","lastModified":"05.11.2019","size":{"item1":225.4,"item2":1}}]
+$("html").on("click", ".file-table tr.drive-row", function () {
+    $(this).toggleClass("selected");
+
+    ActionBarLogic();
+});
+function DeleteSelected() {
+    var count = $(".file-table tr.selected").length;
+    if (count == 0) return;
+    bootbox.confirm({
+        message: "Are you sure?",
+        buttons: {
+            confirm: {
+                label: 'Yes',
+            },
+            cancel: {
+                label: 'No',
+            }
+        },
+        callback: function (result) {
+            if (result) {
+                var foldersId = [];
+                $(".file-table tr.drive-row.selected[data-isfolder=True]").each(function () {
+                    foldersId.push($(this).attr("data-id"));
+                });
+
+                var filesId = [];
+                $(".file-table tr.drive-row.selected[data-isfolder=False]").each(function () {
+                    filesId.push($(this).attr("data-id"));
+                });
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/Folder/Delete',
+                    data: { foldersId: foldersId, filesId: filesId },
+
+                    traditional: true,
+                    success: function (response) {
+                        updateTable();
+
+                    }
+                });
+            }
+        }
+    });
+}
+$("html").on("click", ".action-bar .delete.active", function () {
+    DeleteSelected();
+});
+function DownloadSelected() {
+    var foldersId = [];
+    $(".file-table tr.drive-row.selected[data-isfolder=True]").each(function () {
+        foldersId.push($(this).attr("data-id"));
+    });
+
+    var filesId = [];
+    $(".file-table tr.drive-row.selected[data-isfolder=False]").each(function () {
+        filesId.push($(this).attr("data-id"));
+    });
+
+    var request_params = "?currFolderId=" + $_GET['folderId'];
+    if (foldersId.length > 0) {
+        foldersId.forEach(function (value) {
+            request_params += "&foldersId=" + value;
+        });
+    }
+    if (filesId.length > 0) {
+        filesId.forEach(function (value) {
+            request_params += "&filesId=" + value;
+        });
+    }
+    //alert(location.protocol + '//' + location.host + '/Folder/DownloadMultiple' + request_params);
+    window.location.href = location.protocol + '//' + location.host + '/Folder/DownloadMultiple' + request_params;
+}
+$("html").on("click", ".action-bar .download.active", function () {
+    var count = $(".file-table tr.selected").length;
+
+    if (count == 1) {
+        var isfolder = $(".file-table tr.selected").attr("data-isfolder") === "True";
+        var fId = $(".file-table tr.selected").attr("data-id");
+        if (isfolder) {
+            DownloadSelected();
+        } else {
+            window.location.href = location.protocol + '//' + location.host + '/Folder/Download?fileId=' + fId;
+        }
+    } else if (count > 1) {
+        DownloadSelected();
+    }
+});
+$("html").on("keydown", function (e) {
+    if (e.ctrlKey) {
+        if (e.keyCode == 65 || e.keyCode == 97) { // 'A' or 'a'
+            e.preventDefault();
+            $(".file-table").find(".drive-row").addClass("selected");
+            ActionBarLogic();
+        }
+    }
+    if (e.keyCode == 46) {
+        //Delete
+        DeleteSelected();
     }
 });
 $("html").on("dblclick", ".file-table tr.drive-row", function () {

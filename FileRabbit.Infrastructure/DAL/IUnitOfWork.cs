@@ -8,10 +8,9 @@ namespace FileRabbit.Infrastructure.DAL
 {
     public interface IUnitOfWork : IDisposable
     {
-        IRepository<Folder> Folders { get; }
-        IRepository<File> Files { get; }
         UserManager<User> UserManager { get; }
         SignInManager<User> SignInManager { get; }
+        IRepository<T> GetRepository<T>() where T : class;
         void Save();
     }
 }

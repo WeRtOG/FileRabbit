@@ -69,7 +69,7 @@ namespace FileRabbit.PL.Controllers
         {
             FileVM file = fileSystemService.GetFileById(fileId);
             if (fileSystemService.CheckAccess(file, User.FindFirstValue(ClaimTypes.NameIdentifier)))
-                return PhysicalFile(file.Path, "application/file", file.Name);
+                return PhysicalFile(file.Path, file.ContentType, file.Name);
             else
                 return StatusCode(405, "Error code: 405. You don't have access to this file.");
         }

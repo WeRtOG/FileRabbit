@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using FileRabbit.Infrastructure.DAL;
 using FileRabbit.DAL.Entities;
+using System.Linq;
 
 namespace FileRabbit.DAL.Repositories
 {
@@ -14,6 +15,7 @@ namespace FileRabbit.DAL.Repositories
         private ApplicationContext _db;
         private FileRepository _fileRepository;
         private FolderRepository _folderRepository;
+        private readonly Dictionary<Type, object> _repositories = new Dictionary<Type, object>();
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
 
@@ -24,25 +26,23 @@ namespace FileRabbit.DAL.Repositories
             _signInManager = signIn;
         }
 
-        public IRepository<Folder> Folders
+        public Dictionary<Type, object> Repositories
         {
-            get
-            {
-                if (_folderRepository == null)
-                    _folderRepository = new FolderRepository(_db);
-                return _folderRepository;
-            }
+            get { return _repositories; }
+            set { Repositories = value; }
         }
 
-        public IRepository<File> Files
+        public IRepository<T> GetRepository<T>() where T : class
         {
-            get
+            if (Repositories.Keys.Contains(typeof(T)))
             {
-                if (_fileRepository == null)
-                    _fileRepository = new FileRepository(_db);
-                return _fileRepository;
+                return Repositories[typeof(T)] as IRepository<T>;
             }
-        } 
+
+            IRepository<T> repo = new BaseRepository<T>(_db);
+            Repositories.Add(typeof(T), repo);
+            return repo;
+        }
 
         public UserManager<User> UserManager
         {

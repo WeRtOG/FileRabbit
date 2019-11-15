@@ -40,6 +40,7 @@ namespace FileRabbit.PL
         
             services.AddScoped<IFileSystemService, FileSystemService>();
             services.AddScoped<IUnitOfWork, EFUnitOfWork>();
+            services.AddScoped(typeof(IRepository<>), typeof(BaseRepository<>));
             services.AddScoped<IAuthorizationService, AuthorizationService>();
 
             // определяем требования к паролю и имени пользователя

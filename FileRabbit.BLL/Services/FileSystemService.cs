@@ -12,6 +12,7 @@ using FileRabbit.Infrastructure.DAL;
 using System.Linq;
 using ICSharpCode.SharpZipLib.Core;
 using ICSharpCode.SharpZipLib.Zip;
+using Microsoft.AspNetCore.StaticFiles;
 //using Ionic.Zip;
 
 namespace FileRabbit.BLL.Services
@@ -40,8 +41,8 @@ namespace FileRabbit.BLL.Services
 
             List<ElementVM> models = new List<ElementVM>();
 
-            List<Folder> childFolders = _database.Folders.Find(f => f.ParentFolderId == folderVM.Id).ToList();
-            List<DAL.Entities.File> childFiles = _database.Files.Find(f => f.FolderId == folderVM.Id).ToList();
+            List<Folder> childFolders = _database.GetRepository<Folder>().Find(f => f.ParentFolderId == folderVM.Id).ToList();
+            List<DAL.Entities.File> childFiles = _database.GetRepository<DAL.Entities.File>().Find(f => f.FolderId == folderVM.Id).ToList();
 
             foreach (var elem in dirs)
             {
@@ -66,7 +67,7 @@ namespace FileRabbit.BLL.Services
             foreach (var elem in files)
             {
                 DAL.Entities.File file = childFiles.Find(f => f.Path == elem.FullName);
-                FileVM vm = new FileVM { IsShared = file.IsShared, OwnerId = _database.Folders.Get(file.FolderId).OwnerId };
+                FileVM vm = new FileVM { IsShared = file.IsShared, OwnerId = _database.GetRepository<Folder>().Get(file.FolderId).OwnerId };
                 if (CheckAccess(vm, userId))
                 {
                     // for a more convenient display of file size, call the conversion function
@@ -98,7 +99,7 @@ namespace FileRabbit.BLL.Services
             bool rootFolder = false;
             do
             {
-                Folder folder = _database.Folders.Get(currFolderId);
+                Folder folder = _database.GetRepository<Folder>().Get(currFolderId);
                 FolderShortInfoVM folderInfo = new FolderShortInfoVM { Id = folder.Id, Name = ElementHelperClass.DefineFileName(folder.Path) };
                 currFolderId = folder.ParentFolderId;
                 if (folder.ParentFolderId == null)
@@ -115,17 +116,25 @@ namespace FileRabbit.BLL.Services
         // this method returns folder by id
         public FolderVM GetFolderById(string id)
         {
-            FolderVM folder = _mapper.Map<Folder, FolderVM>(_database.Folders.Get(id));
+            FolderVM folder = _mapper.Map<Folder, FolderVM>(_database.GetRepository<Folder>().Get(id));
             return folder;
         }
 
         // this method returns file by id
         public FileVM GetFileById(string id)
         {
-            FileVM file = _mapper.Map<DAL.Entities.File, FileVM>(_database.Files.Get(id));
-            file.OwnerId = _database.Folders.Get(file.FolderId).OwnerId;
+            FileVM file = _mapper.Map<DAL.Entities.File, FileVM>(_database.GetRepository<DAL.Entities.File>().Get(id));
+            file.OwnerId = _database.GetRepository<Folder>().Get(file.FolderId).OwnerId;
             file.Name = ElementHelperClass.DefineFileName(file.Path);
-            //file.Path = file.Path.Replace("//", "/");
+
+            var provider = new FileExtensionContentTypeProvider();
+            string contentType;
+            if (!provider.TryGetContentType(file.Name, out contentType))
+            {
+                contentType = "application/octet-stream";
+            }
+            file.ContentType = contentType;
+
             return file;
         }
 
@@ -144,7 +153,7 @@ namespace FileRabbit.BLL.Services
                     OwnerId = ownerId,
                     ParentFolderId = parentFolder.Id
                 };
-                _database.Folders.Create(newFolder);
+                _database.GetRepository<Folder>().Create(newFolder);
                 _database.Save();
 
                 ElementVM model = new ElementVM
@@ -174,7 +183,7 @@ namespace FileRabbit.BLL.Services
                 OwnerId = ownerId,
                 ParentFolderId = null
             };
-            _database.Folders.Create(newFolder);
+            _database.GetRepository<Folder>().Create(newFolder);
             _database.Save();
         }
 
@@ -195,7 +204,7 @@ namespace FileRabbit.BLL.Services
                         IsShared = false,
                         FolderId = parentFolder.Id
                     };
-                    _database.Files.Create(file);
+                    _database.GetRepository<DAL.Entities.File>().Create(file);
 
                     ElementVM elem = new ElementVM
                     {
@@ -221,7 +230,7 @@ namespace FileRabbit.BLL.Services
         // this method creates an archive and returns it for download
         public MemoryStream CreateArchive(string currFolderId, string userId, string[] foldersId, string[] filesId)
         {
-            Folder parentFolder = _database.Folders.Get(currFolderId);
+            Folder parentFolder = _database.GetRepository<Folder>().Get(currFolderId);
 
             ZipStrings.UseUnicode = true;
             MemoryStream outputMemStream = new MemoryStream();
@@ -232,15 +241,15 @@ namespace FileRabbit.BLL.Services
 
                 foreach (var id in filesId)
                 {
-                    DAL.Entities.File file = _database.Files.Get(id);
-                    FileVM vm = new FileVM { IsShared = file.IsShared, OwnerId = _database.Folders.Get(file.FolderId).OwnerId };
+                    DAL.Entities.File file = _database.GetRepository<DAL.Entities.File>().Get(id);
+                    FileVM vm = new FileVM { IsShared = file.IsShared, OwnerId = _database.GetRepository<Folder>().Get(file.FolderId).OwnerId };
                     if (CheckAccess(vm, userId))
                         CompressFile(file, zipStream, folderOffset);
                 }
 
                 foreach (var id in foldersId)
                 {
-                    Folder folder = _database.Folders.Get(id);
+                    Folder folder = _database.GetRepository<Folder>().Get(id);
                     FolderVM vm = new FolderVM { IsShared = folder.IsShared, OwnerId = folder.OwnerId };
                     if (CheckAccess(vm, userId))
                         CompressFolder(folder, userId, zipStream, folderOffset);
@@ -255,12 +264,12 @@ namespace FileRabbit.BLL.Services
         // this method recursively compresses a folder structure
         private void CompressFolder(Folder folder, string userId, ZipOutputStream zipStream, int folderOffset)
         {
-            List<Folder> childFolders = _database.Folders.Find(f => f.ParentFolderId == folder.Id).ToList();
-            List<DAL.Entities.File> childFiles = _database.Files.Find(f => f.FolderId == folder.Id).ToList();
+            List<Folder> childFolders = _database.GetRepository<Folder>().Find(f => f.ParentFolderId == folder.Id).ToList();
+            List<DAL.Entities.File> childFiles = _database.GetRepository<DAL.Entities.File>().Find(f => f.FolderId == folder.Id).ToList();
 
             foreach (var childFile in childFiles)
             {
-                FileVM file = new FileVM { IsShared = childFile.IsShared, OwnerId = _database.Folders.Get(childFile.FolderId).OwnerId };
+                FileVM file = new FileVM { IsShared = childFile.IsShared, OwnerId = _database.GetRepository<Folder>().Get(childFile.FolderId).OwnerId };
                 if (CheckAccess(file, userId))
                     CompressFile(childFile, zipStream, folderOffset);
             }
@@ -299,14 +308,14 @@ namespace FileRabbit.BLL.Services
             bool success = true;
             foreach(var id in foldersId)
             {
-                Folder folder = _database.Folders.Get(id);
+                Folder folder = _database.GetRepository<Folder>().Get(id);
                 FolderVM vm = new FolderVM { IsShared = folder.IsShared, OwnerId = folder.OwnerId };
                 if (CheckAccess(vm, userId))
                 {
                     try
                     {
                         Directory.Delete(folder.Path, true);
-                        _database.Folders.Delete(id);
+                        _database.GetRepository<Folder>().Delete(id);
                         _database.Save();
                     }
                     catch
@@ -318,14 +327,14 @@ namespace FileRabbit.BLL.Services
 
             foreach (var id in filesId)
             {
-                DAL.Entities.File file = _database.Files.Get(id);
-                FileVM vm = new FileVM { IsShared = file.IsShared, OwnerId = _database.Folders.Get(file.FolderId).OwnerId };
+                DAL.Entities.File file = _database.GetRepository<DAL.Entities.File>().Get(id);
+                FileVM vm = new FileVM { IsShared = file.IsShared, OwnerId = _database.GetRepository<Folder>().Get(file.FolderId).OwnerId };
                 if (CheckAccess(vm, userId))
                 {
                     try
                     {
                         System.IO.File.Delete(file.Path);
-                        _database.Folders.Delete(id);
+                        _database.GetRepository<Folder>().Delete(id);
                         _database.Save();
                     }
                     catch
@@ -341,14 +350,14 @@ namespace FileRabbit.BLL.Services
         // this method renames the desired folder
         public bool RenameFolder(string newName, string folderId)
         {
-            Folder folder = _database.Folders.Get(folderId);
+            Folder folder = _database.GetRepository<Folder>().Get(folderId);
             string oldPath = folder.Path;
             string newPath = oldPath.Substring(0, oldPath.LastIndexOf('\\') + 1) + newName;
             folder.Path = newPath;
             if (!Directory.Exists(newPath))
             {
                 Directory.Move(oldPath, newPath);
-                _database.Folders.Update(folder);
+                _database.GetRepository<Folder>().Update(folder);
                 ChangeChildrenPath(folder, oldPath, newPath);
                 _database.Save();
                 return true;
@@ -360,19 +369,19 @@ namespace FileRabbit.BLL.Services
         // this method changes the path of the children of the folder recursively in the database
         private void ChangeChildrenPath(Folder folder, string oldPath, string newPath)
         {
-            List<Folder> childFolders = _database.Folders.Find(f => f.ParentFolderId == folder.Id).ToList();
-            List<DAL.Entities.File> childFiles = _database.Files.Find(f => f.FolderId == folder.Id).ToList();
+            List<Folder> childFolders = _database.GetRepository<Folder>().Find(f => f.ParentFolderId == folder.Id).ToList();
+            List<DAL.Entities.File> childFiles = _database.GetRepository<DAL.Entities.File>().Find(f => f.FolderId == folder.Id).ToList();
 
             foreach(var file in childFiles)
             {
                 file.Path = file.Path.Replace(oldPath, newPath);
-                _database.Files.Update(file);
+                _database.GetRepository<DAL.Entities.File>().Update(file);
             }
 
             foreach(var childFolder in childFolders)
             {
                 childFolder.Path = childFolder.Path.Replace(oldPath, newPath);
-                _database.Folders.Update(childFolder);
+                _database.GetRepository<Folder>().Update(childFolder);
                 ChangeChildrenPath(childFolder, oldPath, newPath);
             }
         }
@@ -380,7 +389,7 @@ namespace FileRabbit.BLL.Services
         // this method renames the desired file
         public bool RenameFile(string newName, string fileId)
         {
-            DAL.Entities.File file = _database.Files.Get(fileId);
+            DAL.Entities.File file = _database.GetRepository<DAL.Entities.File>().Get(fileId);
             string oldPath = file.Path;
             string extension = ElementHelperClass.DefineFileExtension(oldPath);
             string newPath = oldPath.Substring(0, oldPath.LastIndexOf('\\') + 1) + newName + extension;
@@ -388,7 +397,7 @@ namespace FileRabbit.BLL.Services
             if (!System.IO.File.Exists(newPath))
             {
                 System.IO.File.Move(oldPath, newPath);
-                _database.Files.Update(file);
+                _database.GetRepository<DAL.Entities.File>().Update(file);
                 _database.Save();
                 return true;
             }

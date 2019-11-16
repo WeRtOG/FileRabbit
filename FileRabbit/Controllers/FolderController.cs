@@ -34,7 +34,7 @@ namespace FileRabbit.PL.Controllers
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             // check access to needed folder
-            if (fileSystemService.CheckAccess(folder, userId))
+            if (fileSystemService.CheckAccessToView(folder, userId))
             {
                 List<ElementVM> models = fileSystemService.GetElementsFromFolder(fileSystemService.GetFolderById(folderId), userId).ToList();
                 Stack<FolderShortInfoVM> folderPath = fileSystemService.GetFolderPath(folderId);
@@ -59,8 +59,10 @@ namespace FileRabbit.PL.Controllers
         // this action uploads the collection of files to the hard drive and returns the upload result
         public async Task<IActionResult> Upload(IFormFileCollection uploads, string folderId)
         {
-            List<ElementVM> elements = (await fileSystemService.UploadFiles(uploads, fileSystemService.GetFolderById(folderId))).ToList();
+            if (!fileSystemService.CheckEditAccess(fileSystemService.GetFolderById(folderId), User.FindFirstValue(ClaimTypes.NameIdentifier)))
+                return StatusCode(405, "Error code: 405. You don't have access to this folder.");
 
+            List<ElementVM> elements = (await fileSystemService.UploadFiles(uploads, fileSystemService.GetFolderById(folderId))).ToList();
             return new ObjectResult(elements);
         }
 
@@ -68,7 +70,7 @@ namespace FileRabbit.PL.Controllers
         public IActionResult Download(string fileId)
         {
             FileVM file = fileSystemService.GetFileById(fileId);
-            if (fileSystemService.CheckAccess(file, User.FindFirstValue(ClaimTypes.NameIdentifier)))
+            if (fileSystemService.CheckAccessToView(file, User.FindFirstValue(ClaimTypes.NameIdentifier)))
                 return PhysicalFile(file.Path, file.ContentType, file.Name);
             else
                 return StatusCode(405, "Error code: 405. You don't have access to this file.");
@@ -77,10 +79,6 @@ namespace FileRabbit.PL.Controllers
         // this action returns an archive with multiple files and folders to download
         public IActionResult DownloadMultiple(string currFolderId, string[] foldersId, string[] filesId)
         {
-            //currFolderId = "1244ded8-e7e5-4cb4-845a-10dad1c04982";
-            //string userId = "1244ded8-e7e5-4cb4-845a-10dad1c04982";
-            //foldersId = { "57bc2f57-fe1c-445e-80b3-a0641f8eaaab", "ee867c79-01ae-4726-ae91-14d3059cb7a9" };
-            //filesId = { "9696f236-bf8e-4eaa-a603-0f20b5dbb19d", "20e236a7-2e9d-41cb-919f-9c911152fd2e" };
             MemoryStream ms = fileSystemService.CreateArchive(currFolderId,
                 User.FindFirstValue(ClaimTypes.NameIdentifier), foldersId, filesId);
             return File(ms, "application/archive", Guid.NewGuid() + ".zip");
@@ -90,7 +88,7 @@ namespace FileRabbit.PL.Controllers
         public IActionResult DisplayFile(string fileId)
         {
             FileVM file = fileSystemService.GetFileById(fileId);
-            if (fileSystemService.CheckAccess(file, User.FindFirstValue(ClaimTypes.NameIdentifier)))
+            if (fileSystemService.CheckAccessToView(file, User.FindFirstValue(ClaimTypes.NameIdentifier)))
             {
                 Response.Headers.Add("Content-Disposition", "inline; filename=" + file.Name);
                 return PhysicalFile(file.Path, file.ContentType);
@@ -103,9 +101,11 @@ namespace FileRabbit.PL.Controllers
         [HttpPost]
         public IActionResult AddFolder(string folderId, string newFolderName)
         {
+            if (!fileSystemService.CheckEditAccess(fileSystemService.GetFolderById(folderId), User.FindFirstValue(ClaimTypes.NameIdentifier)))
+                return StatusCode(405, "Error code: 405. You don't have access to this folder.");
+
             ElementVM newFolder = fileSystemService.CreateFolder(fileSystemService.GetFolderById(folderId),
                 newFolderName, User.FindFirstValue(ClaimTypes.NameIdentifier));
-
             if (newFolder == null)
                 return BadRequest("This folder already exists.");
             return new ObjectResult(newFolder);
@@ -123,9 +123,9 @@ namespace FileRabbit.PL.Controllers
         {
             bool available;
             if (isFolder)
-                available = fileSystemService.CheckAccess(fileSystemService.GetFolderById(elementId), User.FindFirstValue(ClaimTypes.NameIdentifier));
+                available = fileSystemService.CheckEditAccess(fileSystemService.GetFolderById(elementId), User.FindFirstValue(ClaimTypes.NameIdentifier));
             else
-                available = fileSystemService.CheckAccess(fileSystemService.GetFileById(elementId), User.FindFirstValue(ClaimTypes.NameIdentifier));
+                available = fileSystemService.CheckEditAccess(fileSystemService.GetFileById(elementId), User.FindFirstValue(ClaimTypes.NameIdentifier));
 
             if (available)
             {
@@ -136,5 +136,13 @@ namespace FileRabbit.PL.Controllers
             else
                 return StatusCode(405, "Error code: 405. You don't have access to this " + (isFolder ? "folder" : "file") + " .");
         }
+
+        // this action shares or unshares the selected files and folder and returns the link to them
+        //public IActionResult Share(string[] foldersId, string[] filesId, bool openAccess)
+        //{
+        //    string link;
+        //    link = fileSystemService.ChangeAccess(foldersId, filesId, openAccess);
+        //    return new ObjectResult(link);
+        //}
     }
 }

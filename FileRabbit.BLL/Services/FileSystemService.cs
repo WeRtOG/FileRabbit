@@ -48,7 +48,7 @@ namespace FileRabbit.BLL.Services
             {
                 string s = childFolders[0].Path;
                 Folder folder = childFolders.Find(f => f.Path == elem.FullName);
-                if (CheckAccess(new FolderVM { OwnerId = folder.OwnerId, IsShared = folder.IsShared }, userId))
+                if (CheckAccessToView(new FolderVM { OwnerId = folder.OwnerId, IsShared = folder.IsShared }, userId))
                 {
                     ElementVM model = new ElementVM
                     {
@@ -68,7 +68,7 @@ namespace FileRabbit.BLL.Services
             {
                 DAL.Entities.File file = childFiles.Find(f => f.Path == elem.FullName);
                 FileVM vm = new FileVM { IsShared = file.IsShared, OwnerId = _database.GetRepository<Folder>().Get(file.FolderId).OwnerId };
-                if (CheckAccess(vm, userId))
+                if (CheckAccessToView(vm, userId))
                 {
                     // for a more convenient display of file size, call the conversion function
                     Tuple<double, ElementVM.Unit> size = new Tuple<double, ElementVM.Unit>(elem.Length, ElementVM.Unit.B);
@@ -201,7 +201,7 @@ namespace FileRabbit.BLL.Services
                     {
                         Id = Guid.NewGuid().ToString(),
                         Path = path,
-                        IsShared = false,
+                        IsShared = parentFolder.IsShared,
                         FolderId = parentFolder.Id
                     };
                     _database.GetRepository<DAL.Entities.File>().Create(file);
@@ -243,7 +243,7 @@ namespace FileRabbit.BLL.Services
                 {
                     DAL.Entities.File file = _database.GetRepository<DAL.Entities.File>().Get(id);
                     FileVM vm = new FileVM { IsShared = file.IsShared, OwnerId = _database.GetRepository<Folder>().Get(file.FolderId).OwnerId };
-                    if (CheckAccess(vm, userId))
+                    if (CheckAccessToView(vm, userId))
                         CompressFile(file, zipStream, folderOffset);
                 }
 
@@ -251,7 +251,7 @@ namespace FileRabbit.BLL.Services
                 {
                     Folder folder = _database.GetRepository<Folder>().Get(id);
                     FolderVM vm = new FolderVM { IsShared = folder.IsShared, OwnerId = folder.OwnerId };
-                    if (CheckAccess(vm, userId))
+                    if (CheckAccessToView(vm, userId))
                         CompressFolder(folder, userId, zipStream, folderOffset);
                 }
 
@@ -270,14 +270,14 @@ namespace FileRabbit.BLL.Services
             foreach (var childFile in childFiles)
             {
                 FileVM file = new FileVM { IsShared = childFile.IsShared, OwnerId = _database.GetRepository<Folder>().Get(childFile.FolderId).OwnerId };
-                if (CheckAccess(file, userId))
+                if (CheckAccessToView(file, userId))
                     CompressFile(childFile, zipStream, folderOffset);
             }
 
             foreach (var childFolder in childFolders)
             {
                 FolderVM vm = new FolderVM { IsShared = childFolder.IsShared, OwnerId = childFolder.OwnerId };
-                if (CheckAccess(vm, userId))
+                if (CheckAccessToView(vm, userId))
                     CompressFolder(childFolder, userId, zipStream, folderOffset);
             }
         }
@@ -310,7 +310,7 @@ namespace FileRabbit.BLL.Services
             {
                 Folder folder = _database.GetRepository<Folder>().Get(id);
                 FolderVM vm = new FolderVM { IsShared = folder.IsShared, OwnerId = folder.OwnerId };
-                if (CheckAccess(vm, userId))
+                if (CheckEditAccess(vm, userId))
                 {
                     try
                     {
@@ -329,7 +329,7 @@ namespace FileRabbit.BLL.Services
             {
                 DAL.Entities.File file = _database.GetRepository<DAL.Entities.File>().Get(id);
                 FileVM vm = new FileVM { IsShared = file.IsShared, OwnerId = _database.GetRepository<Folder>().Get(file.FolderId).OwnerId };
-                if (CheckAccess(vm, userId))
+                if (CheckEditAccess(vm, userId))
                 {
                     try
                     {
@@ -405,30 +405,43 @@ namespace FileRabbit.BLL.Services
                 return false;
         }
 
-        // this method checks access to the needed folder by current user
-        public bool CheckAccess(FolderVM folder, string currentId)
+        public string ChangeAccess(string userId, string[] foldersId, string[] filesId, bool openAccess)
+        {
+            throw new NotImplementedException();
+        }
+
+        // this method checks access to view the needed folder by current user
+        public bool CheckAccessToView(FolderVM folder, string currentId)
         {
             if (folder.IsShared)
                 return true;
             else
-            {
-                if (folder.OwnerId == currentId)
-                    return true;
-                return false;
-            }   
+                return CheckEditAccess(folder, currentId);
         }
 
-        // this method checks access to the needed file by current user
-        public bool CheckAccess(FileVM file, string currentId)
+        // this method checks access to view the needed file by current user
+        public bool CheckAccessToView(FileVM file, string currentId)
         {
             if (file.IsShared)
                 return true;
             else
-            {
-                if (file.OwnerId == currentId)
-                    return true;
-                return false;
-            }
+                return CheckEditAccess(file, currentId);
+        }
+
+        // this method checks the current user for editing access to the needed folder
+        public bool CheckEditAccess(FolderVM folder, string currentId)
+        {
+            if (folder.OwnerId == currentId)
+                return true;
+            return false;
+        }
+
+        // this method checks the current user for editing access to the needed file
+        public bool CheckEditAccess(FileVM file, string currentId)
+        {
+            if (file.OwnerId == currentId)
+                return true;
+            return false;
         }
     }
 }

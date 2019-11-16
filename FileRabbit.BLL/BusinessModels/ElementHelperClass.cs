@@ -25,6 +25,9 @@ namespace FileRabbit.BLL.BusinessModels
             ".jpeg", ".jpg", ".mng", ".msp", ".png", ".psd", ".pspimage", ".tga", ".thm", ".tif", ".tiff",
             ".xcf", ".ai", ".cdd", ".cdr", ".eps", ".ps", ".svg", ".vsd" };
 
+        private static List<string> supportedTypes = new List<string> { ".bmp", ".gif", ".jpeg", ".jpg", ".png", ".svg", ".ico",
+            ".pdf", "",};
+
         // this method is needed to translate bytes to kylo-, mega-, gigabytes
         public static Tuple<double, ElementVM.Unit> Recount(Tuple<double, ElementVM.Unit> value)
         {

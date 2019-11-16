@@ -86,6 +86,19 @@ namespace FileRabbit.PL.Controllers
             return File(ms, "application/archive", Guid.NewGuid() + ".zip");
         }
 
+        // this action returns a single file to display
+        public IActionResult DisplayFile(string fileId)
+        {
+            FileVM file = fileSystemService.GetFileById(fileId);
+            if (fileSystemService.CheckAccess(file, User.FindFirstValue(ClaimTypes.NameIdentifier)))
+            {
+                Response.Headers.Add("Content-Disposition", "inline; filename=" + file.Name);
+                return PhysicalFile(file.Path, file.ContentType);
+            }
+            else
+                return StatusCode(405, "Error code: 405. You don't have access to this file.");
+        }
+
         // this action creates a new folder and returns the creating result
         [HttpPost]
         public IActionResult AddFolder(string folderId, string newFolderName)

@@ -405,9 +405,74 @@ namespace FileRabbit.BLL.Services
                 return false;
         }
 
-        public string ChangeAccess(string userId, string[] foldersId, string[] filesId, bool openAccess)
+        // this method changes access to view for the selected folders and files and returns folder id
+        public string ChangeAccess(string currFolderId, string userId, string[] foldersId, string[] filesId, bool openAccess)
         {
-            throw new NotImplementedException();
+            string idForLink;
+            if (foldersId.Length == 1 && filesId.Length == 0)
+                idForLink = foldersId[0];
+            else
+            {
+                if (openAccess)
+                {
+                    Folder folder = _database.GetRepository<Folder>().Get(currFolderId);
+                    FolderVM vm = new FolderVM { IsShared = folder.IsShared, OwnerId = folder.OwnerId };
+                    if (CheckEditAccess(vm, userId))
+                    {
+                        folder.IsShared = openAccess;
+                        _database.GetRepository<Folder>().Update(folder);
+                    }
+                }
+                idForLink = currFolderId;
+            }
+
+            foreach (string id in filesId)
+            {
+                DAL.Entities.File file = _database.GetRepository<DAL.Entities.File>().Get(id);
+                FileVM vm = new FileVM { IsShared = file.IsShared, OwnerId = _database.GetRepository<Folder>().Get(file.FolderId).OwnerId };
+                if (CheckEditAccess(vm, userId))
+                {
+                    file.IsShared = openAccess;
+                    _database.GetRepository<DAL.Entities.File>().Update(file);
+                }
+            }
+
+            foreach (string id in foldersId)
+            {
+                Folder folder = _database.GetRepository<Folder>().Get(id);
+                FolderVM vm = new FolderVM { IsShared = folder.IsShared, OwnerId = folder.OwnerId };
+                if (CheckEditAccess(vm, userId))
+                {
+                    folder.IsShared = openAccess;
+                    _database.GetRepository<Folder>().Update(folder);
+                    ChangeChildrenAccess(folder, openAccess);
+                }
+            }
+
+            
+            _database.Save();
+
+            return idForLink;
+        }
+
+        // this method changes access to view for the children of the selected folder
+        private void ChangeChildrenAccess(Folder parentFolder, bool openAccess)
+        {
+            List<Folder> childFolders = _database.GetRepository<Folder>().Find(f => f.ParentFolderId == parentFolder.Id).ToList();
+            List<DAL.Entities.File> childFiles = _database.GetRepository<DAL.Entities.File>().Find(f => f.FolderId == parentFolder.Id).ToList();
+
+            foreach (var file in childFiles)
+            {
+                file.IsShared = openAccess;
+                _database.GetRepository<DAL.Entities.File>().Update(file);
+            }
+
+            foreach (var folder in childFolders)
+            {
+                folder.IsShared = openAccess;
+                _database.GetRepository<Folder>().Update(folder);
+                ChangeChildrenAccess(folder, openAccess);
+            }
         }
 
         // this method checks access to view the needed folder by current user

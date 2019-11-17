@@ -21,7 +21,7 @@ namespace FileRabbit.BLL.Interfaces
         bool RemoveFilesAndFolders(string userId, string[] foldersId, string[] filesId);
         bool RenameFolder(string newName, string folderId);
         bool RenameFile(string newName, string fileId);
-        string ChangeAccess(string userId, string[] foldersId, string[] filesId, bool openAccess);
+        string ChangeAccess(string currFolderId, string userId, string[] foldersId, string[] filesId, bool openAccess);
         bool CheckAccessToView(FolderVM folder, string currentId);
         bool CheckAccessToView(FileVM file, string currentId);
         bool CheckEditAccess(FolderVM folder, string currentId);

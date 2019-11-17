@@ -112,6 +112,7 @@ namespace FileRabbit.PL.Controllers
         }
 
         // this action removes the selected files and folders and returns the result removing result
+        [HttpPost]
         public IActionResult Delete(string[] foldersId, string[] filesId)
         {
             bool success = fileSystemService.RemoveFilesAndFolders(User.FindFirstValue(ClaimTypes.NameIdentifier), foldersId, filesId);
@@ -119,6 +120,7 @@ namespace FileRabbit.PL.Controllers
         }
 
         // this action renames the selected file or folder and returns the result of renaming
+        [HttpPost]
         public IActionResult Rename(string newName, string elementId, bool isFolder)
         {
             bool available;
@@ -138,11 +140,11 @@ namespace FileRabbit.PL.Controllers
         }
 
         // this action shares or unshares the selected files and folder and returns the link to them
-        //public IActionResult Share(string[] foldersId, string[] filesId, bool openAccess)
-        //{
-        //    string link;
-        //    link = fileSystemService.ChangeAccess(foldersId, filesId, openAccess);
-        //    return new ObjectResult(link);
-        //}
+        public IActionResult Share(string currFolderId, string[] foldersId, string[] filesId, bool openAccess)
+        {
+            string link = fileSystemService.ChangeAccess(currFolderId, User.FindFirstValue(ClaimTypes.NameIdentifier), 
+                foldersId, filesId, openAccess);
+            return new ObjectResult(link);
+        }
     }
 }

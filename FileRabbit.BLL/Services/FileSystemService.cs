@@ -13,6 +13,7 @@ using System.Linq;
 using ICSharpCode.SharpZipLib.Core;
 using ICSharpCode.SharpZipLib.Zip;
 using Microsoft.AspNetCore.StaticFiles;
+using FileRabbit.BLL.Exceptions;
 //using Ionic.Zip;
 
 namespace FileRabbit.BLL.Services
@@ -48,43 +49,49 @@ namespace FileRabbit.BLL.Services
             {
                 string s = childFolders[0].Path;
                 Folder folder = childFolders.Find(f => f.Path == elem.FullName);
-                if (CheckAccessToView(new FolderVM { OwnerId = folder.OwnerId, IsShared = folder.IsShared }, userId))
+                if (folder != null)
                 {
-                    ElementVM model = new ElementVM
+                    if (CheckAccessToView(new FolderVM { OwnerId = folder.OwnerId, IsShared = folder.IsShared }, userId))
                     {
-                        Id = folder.Id,
-                        IsFolder = true,
-                        Type = ElementVM.FileType.Folder,
-                        ElemName = elem.Name,
-                        LastModified = elem.LastWriteTime.ToShortDateString(),
-                        Size = null
-                    };
+                        ElementVM model = new ElementVM
+                        {
+                            Id = folder.Id,
+                            IsFolder = true,
+                            Type = ElementVM.FileType.Folder,
+                            ElemName = elem.Name,
+                            LastModified = elem.LastWriteTime.ToShortDateString(),
+                            Size = null
+                        };
 
-                    models.Add(model);
+                        models.Add(model);
+                    }
                 }
             }
 
             foreach (var elem in files)
             {
                 DAL.Entities.File file = childFiles.Find(f => f.Path == elem.FullName);
-                FileVM vm = new FileVM { IsShared = file.IsShared, OwnerId = _database.GetRepository<Folder>().Get(file.FolderId).OwnerId };
-                if (CheckAccessToView(vm, userId))
+                if (file != null)
                 {
-                    // for a more convenient display of file size, call the conversion function
-                    Tuple<double, ElementVM.Unit> size = new Tuple<double, ElementVM.Unit>(elem.Length, ElementVM.Unit.B);
-                    size = ElementHelperClass.Recount(size);
-                    ElementVM.FileType type = ElementHelperClass.DefineFileType(elem.Extension);
-
-                    ElementVM model = new ElementVM
+                    FileVM vm = new FileVM { IsShared = file.IsShared, OwnerId = _database.GetRepository<Folder>().Get(file.FolderId).OwnerId };
+                    if (CheckAccessToView(vm, userId))
                     {
-                        Id = childFiles.Find(f => f.Path == elem.FullName).Id,
-                        IsFolder = false,
-                        Type = type,
-                        ElemName = elem.Name,
-                        LastModified = elem.LastWriteTime.ToShortDateString(),
-                        Size = size
-                    };
-                    models.Add(model);
+                        // for a more convenient display of file size, call the conversion function
+                        Tuple<double, ElementVM.Unit> size = new Tuple<double, ElementVM.Unit>(elem.Length, ElementVM.Unit.B);
+                        size = ElementHelperClass.Recount(size);
+                        ElementVM.FileType type = ElementHelperClass.DefineFileType(elem.Extension);
+
+                        ElementVM model = new ElementVM
+                        {
+                            Id = childFiles.Find(f => f.Path == elem.FullName).Id,
+                            IsFolder = false,
+                            Type = type,
+                            ElemName = elem.Name,
+                            LastModified = elem.LastWriteTime.ToShortDateString(),
+                            Size = size
+                        };
+                        models.Add(model);
+                    }
                 }
             }
 
@@ -117,6 +124,8 @@ namespace FileRabbit.BLL.Services
         public FolderVM GetFolderById(string id)
         {
             FolderVM folder = _mapper.Map<Folder, FolderVM>(_database.GetRepository<Folder>().Get(id));
+            if (folder == null)
+                throw new StatusCodeException($"The folder with ID = {id} doesn't exists.", StatusCodes.Status404NotFound);
             return folder;
         }
 
@@ -124,6 +133,9 @@ namespace FileRabbit.BLL.Services
         public FileVM GetFileById(string id)
         {
             FileVM file = _mapper.Map<DAL.Entities.File, FileVM>(_database.GetRepository<DAL.Entities.File>().Get(id));
+            if (file == null)
+                throw new StatusCodeException($"The file with ID = {id} doesn't exists.", StatusCodes.Status404NotFound);
+
             file.OwnerId = _database.GetRepository<Folder>().Get(file.FolderId).OwnerId;
             file.Name = ElementHelperClass.DefineFileName(file.Path);
 
@@ -231,6 +243,9 @@ namespace FileRabbit.BLL.Services
         public MemoryStream CreateArchive(string currFolderId, string userId, string[] foldersId, string[] filesId)
         {
             Folder parentFolder = _database.GetRepository<Folder>().Get(currFolderId);
+            if (parentFolder == null)
+                throw new StatusCodeException($"Invalid current folder ID. Unable to create archive.", 
+                    StatusCodes.Status500InternalServerError);
 
             ZipStrings.UseUnicode = true;
             MemoryStream outputMemStream = new MemoryStream();
@@ -507,6 +522,14 @@ namespace FileRabbit.BLL.Services
             if (file.OwnerId == currentId)
                 return true;
             return false;
+        }
+
+        // this method throws an exception with the necessary message and status code
+        private void ThrowException(string message, int statusCode)
+        {
+            Exception exception = new Exception(message);
+            exception.Data["Status code"] = statusCode;
+            throw exception;
         }
     }
 }

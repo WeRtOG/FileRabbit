@@ -80,13 +80,15 @@ namespace FileRabbit.PL
             }
             else
             {
-                app.UseExceptionHandler("/Home/Error");
+                app.UseStatusCodePagesWithReExecute("/Home/Error", "?statusCode={0}");
+                app.UseExceptionHandler("/Home/ServerError");
+
                 app.UseHsts();
             }
 
+           
             app.UseHttpsRedirection();
             app.UseRouting();
-            //app.UseStatusCodePages("text/plain", "Error. Status code : {0}");
             app.UseStaticFiles();
             app.UseAuthentication();
 

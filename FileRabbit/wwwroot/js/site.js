@@ -107,6 +107,29 @@ $("html").on("click", ".file-table tr.drive-row", function () {
 
     ActionBarLogic();
 });
+function ShareSelected() {
+    var foldersId = [];
+    $(".file-table tr.drive-row.selected[data-isfolder=True]").each(function () {
+        foldersId.push($(this).attr("data-id"));
+    });
+
+    var filesId = [];
+    $(".file-table tr.drive-row.selected[data-isfolder=False]").each(function () {
+        filesId.push($(this).attr("data-id"));
+    });
+
+    $.ajax({
+        type: 'POST',
+        url: '/Folder/Share',
+        data: { currFolderId: $_GET['folderId'], foldersId: foldersId, filesId: filesId, openAccess: true },
+
+        traditional: true,
+        success: function (response) {
+            var url = "https://localhost:44350/Folder/Watch?folderId=" + response;
+            bootbox.alert('Ваша ссылка готова:<br><input value="' + url + '"/>');
+        }
+    });
+}
 function DeleteSelected() {
     var count = $(".file-table tr.selected").length;
     if (count == 0) return;
@@ -150,6 +173,9 @@ function DeleteSelected() {
 $("html").on("click", ".action-bar .delete.active", function () {
     DeleteSelected();
 });
+$("html").on("click", ".action-bar .share.active", function () {
+    ShareSelected();
+});
 function DownloadSelected() {
     var foldersId = [];
     $(".file-table tr.drive-row.selected[data-isfolder=True]").each(function () {
@@ -190,7 +216,7 @@ $("html").on("click", ".action-bar .download.active", function () {
         DownloadSelected();
     }
 });
-$("html").on("keydown", function (e) {
+$("html").on("keydown", ".file-table", function (e) {
     if (e.ctrlKey) {
         if (e.keyCode == 65 || e.keyCode == 97) { // 'A' or 'a'
             e.preventDefault();

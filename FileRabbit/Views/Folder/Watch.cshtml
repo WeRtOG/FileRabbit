@@ -145,7 +145,7 @@
             <div class="modal-body">
                 <form class="addfolder" asp-action="AddFolder" asp-controller="Folder" method="post" enctype="multipart/form-data">
                     <input type="hidden" value="@ViewBag.CurrFolderId" name="folderId" />
-                    <input type="text" name="newFolderName" />
+                    <input type="text" name="newFolderName" placeholder="Name" />
                     <input type="submit" value="Create folder" />
                 </form>
             </div>

@@ -405,3 +405,33 @@ select:-webkit-autofill:focus {
 .file-bar .text-center {
     height: 100%;
 }
+.modal-content {
+    background: #333;
+    color: #ddd;
+}
+.modal-content .close {
+    color: white;
+}
+.modal-content [data-bb-handler="cancel"] {
+    color: #ddd;
+}
+.modal-content .modal-footer {
+    border-top: 1px solid rgba(255,255,255,.06);
+}
+.modal-content input {
+    width: 100%;
+    border-radius: 5px;
+    background: #444;
+    border: none;
+    color: #fff;
+    transition: all 0.3s ease;
+    outline: none;
+    padding: 10px;
+    -webkit-text-fill-color: white;
+    margin: 5px;
+}
+
+.modal-content input:hover {
+    background: #4d4d4d;
+}
+}

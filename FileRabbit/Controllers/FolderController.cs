@@ -1,14 +1,15 @@
-﻿using System;
+﻿using AutoMapper;
+using FileRabbit.BLL.Exceptions;
+using FileRabbit.BLL.Interfaces;
+using FileRabbit.ViewModels;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using FileRabbit.BLL.Interfaces;
-using AutoMapper;
-using FileRabbit.ViewModels;
 
 namespace FileRabbit.PL.Controllers
 {
@@ -51,7 +52,7 @@ namespace FileRabbit.PL.Controllers
                 return View(models);
             }
             else
-                throw new Exception($"You don't have access to folder with ID = {folderId}.");
+                throw new StatusCodeException($"You don't have access to folder with ID = {folderId}.", StatusCodes.Status403Forbidden);
         }
 
         [HttpPost]
@@ -60,7 +61,7 @@ namespace FileRabbit.PL.Controllers
         public async Task<IActionResult> Upload(IFormFileCollection uploads, string folderId)
         {
             if (!fileSystemService.CheckEditAccess(fileSystemService.GetFolderById(folderId), User.FindFirstValue(ClaimTypes.NameIdentifier)))
-                return StatusCode(403, "Error code: 403. You don't have access to this folder.");
+                throw new StatusCodeException($"You don't have access to folder with ID = {folderId}.", StatusCodes.Status403Forbidden);
 
             List<ElementVM> elements = (await fileSystemService.UploadFiles(uploads, fileSystemService.GetFolderById(folderId))).ToList();
             return new ObjectResult(elements);
@@ -73,7 +74,7 @@ namespace FileRabbit.PL.Controllers
             if (fileSystemService.CheckAccessToView(file, User.FindFirstValue(ClaimTypes.NameIdentifier)))
                 return PhysicalFile(file.Path, file.ContentType, file.Name);
             else
-                return StatusCode(403, "Error code: 403. You don't have access to this file.");
+                throw new StatusCodeException($"You don't have access to file with ID = {fileId}.", StatusCodes.Status403Forbidden);
         }
 
         // this action returns an archive with multiple files and folders to download
@@ -94,7 +95,7 @@ namespace FileRabbit.PL.Controllers
                 return PhysicalFile(file.Path, file.ContentType);
             }
             else
-                return StatusCode(403, "Error code: 403. You don't have access to this file.");
+                throw new StatusCodeException($"You don't have access to file with ID = {fileId}.", StatusCodes.Status403Forbidden);
         }
 
         // this action creates a new folder and returns the creating result
@@ -102,7 +103,7 @@ namespace FileRabbit.PL.Controllers
         public IActionResult AddFolder(string folderId, string newFolderName)
         {
             if (!fileSystemService.CheckEditAccess(fileSystemService.GetFolderById(folderId), User.FindFirstValue(ClaimTypes.NameIdentifier)))
-                return StatusCode(403, "Error code: 403. You don't have access to this folder.");
+                throw new StatusCodeException($"You don't have access to folder with ID = {folderId}.", StatusCodes.Status403Forbidden);
 
             ElementVM newFolder = fileSystemService.CreateFolder(fileSystemService.GetFolderById(folderId),
                 newFolderName, User.FindFirstValue(ClaimTypes.NameIdentifier));
@@ -136,7 +137,8 @@ namespace FileRabbit.PL.Controllers
                 return new ObjectResult(success);
             }
             else
-                return StatusCode(405, "Error code: 405. You don't have access to this " + (isFolder ? "folder" : "file") + " .");
+                throw new StatusCodeException("You don't have access to " + (isFolder ? "folder" : "file") + $" with ID = {elementId}.",
+                    StatusCodes.Status403Forbidden);
         }
 
         // this action shares or unshares the selected files and folder and returns the link to them

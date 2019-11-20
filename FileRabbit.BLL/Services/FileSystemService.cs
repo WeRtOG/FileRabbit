@@ -244,7 +244,7 @@ namespace FileRabbit.BLL.Services
         {
             Folder parentFolder = _database.GetRepository<Folder>().Get(currFolderId);
             if (parentFolder == null)
-                throw new StatusCodeException($"Invalid current folder ID. Unable to create archive.", 
+                throw new StatusCodeException($"Invalid current folder ID ({currFolderId}). Unable to create archive.", 
                     StatusCodes.Status500InternalServerError);
 
             ZipStrings.UseUnicode = true;
@@ -324,12 +324,17 @@ namespace FileRabbit.BLL.Services
             foreach(var id in foldersId)
             {
                 Folder folder = _database.GetRepository<Folder>().Get(id);
+                if (folder == null)
+                    throw new StatusCodeException($"The folder with ID = {id} doesn't exists.", StatusCodes.Status404NotFound);
+
                 FolderVM vm = new FolderVM { IsShared = folder.IsShared, OwnerId = folder.OwnerId };
                 if (CheckEditAccess(vm, userId))
                 {
                     try
                     {
                         Directory.Delete(folder.Path, true);
+                        Folder deletedFolder = _database.GetRepository<Folder>().Get(id);
+                        RemoveChildrenFolders(deletedFolder);
                         _database.GetRepository<Folder>().Delete(id);
                         _database.Save();
                     }
@@ -343,13 +348,16 @@ namespace FileRabbit.BLL.Services
             foreach (var id in filesId)
             {
                 DAL.Entities.File file = _database.GetRepository<DAL.Entities.File>().Get(id);
+                if (file == null)
+                    throw new StatusCodeException($"The file with ID = {id} doesn't exists.", StatusCodes.Status404NotFound);
+
                 FileVM vm = new FileVM { IsShared = file.IsShared, OwnerId = _database.GetRepository<Folder>().Get(file.FolderId).OwnerId };
                 if (CheckEditAccess(vm, userId))
                 {
                     try
                     {
                         System.IO.File.Delete(file.Path);
-                        _database.GetRepository<Folder>().Delete(id);
+                        _database.GetRepository<DAL.Entities.File>().Delete(id);
                         _database.Save();
                     }
                     catch
@@ -362,10 +370,24 @@ namespace FileRabbit.BLL.Services
             return success;
         }
 
+        // this method removes folders from database recursive
+        private void RemoveChildrenFolders(Folder folder)
+        {
+            List<Folder> childs = _database.GetRepository<Folder>().Find(f => f.ParentFolderId == folder.Id).ToList();
+            foreach(Folder child in childs)
+            {
+                RemoveChildrenFolders(child);
+            }
+            _database.GetRepository<Folder>().Delete(folder.Id);
+        }
+
         // this method renames the desired folder
         public bool RenameFolder(string newName, string folderId)
         {
             Folder folder = _database.GetRepository<Folder>().Get(folderId);
+            if (folder == null)
+                throw new StatusCodeException($"The folder with ID = {folderId} doesn't exists.", StatusCodes.Status404NotFound);
+
             string oldPath = folder.Path;
             string newPath = oldPath.Substring(0, oldPath.LastIndexOf('\\') + 1) + newName;
             folder.Path = newPath;
@@ -405,6 +427,9 @@ namespace FileRabbit.BLL.Services
         public bool RenameFile(string newName, string fileId)
         {
             DAL.Entities.File file = _database.GetRepository<DAL.Entities.File>().Get(fileId);
+            if (file == null)
+                throw new StatusCodeException($"The file with ID = {fileId} doesn't exists.", StatusCodes.Status404NotFound);
+
             string oldPath = file.Path;
             string extension = ElementHelperClass.DefineFileExtension(oldPath);
             string newPath = oldPath.Substring(0, oldPath.LastIndexOf('\\') + 1) + newName + extension;
@@ -431,12 +456,18 @@ namespace FileRabbit.BLL.Services
                 if (openAccess)
                 {
                     Folder folder = _database.GetRepository<Folder>().Get(currFolderId);
+                    if (folder == null)
+                        throw new StatusCodeException($"The folder with ID = {currFolderId} doesn't exists.", StatusCodes.Status404NotFound);
+
                     FolderVM vm = new FolderVM { IsShared = folder.IsShared, OwnerId = folder.OwnerId };
                     if (CheckEditAccess(vm, userId))
                     {
                         folder.IsShared = openAccess;
                         _database.GetRepository<Folder>().Update(folder);
                     }
+                    else
+                        throw new StatusCodeException($"You don't have access to folder with ID = {currFolderId}.", 
+                            StatusCodes.Status403Forbidden);
                 }
                 idForLink = currFolderId;
             }
@@ -444,6 +475,9 @@ namespace FileRabbit.BLL.Services
             foreach (string id in filesId)
             {
                 DAL.Entities.File file = _database.GetRepository<DAL.Entities.File>().Get(id);
+                if (file == null)
+                    throw new StatusCodeException($"The file with ID = {id} doesn't exists.", StatusCodes.Status404NotFound);
+
                 FileVM vm = new FileVM { IsShared = file.IsShared, OwnerId = _database.GetRepository<Folder>().Get(file.FolderId).OwnerId };
                 if (CheckEditAccess(vm, userId))
                 {
@@ -455,6 +489,9 @@ namespace FileRabbit.BLL.Services
             foreach (string id in foldersId)
             {
                 Folder folder = _database.GetRepository<Folder>().Get(id);
+                if (folder == null)
+                    throw new StatusCodeException($"The folder with ID = {id} doesn't exists.", StatusCodes.Status404NotFound);
+
                 FolderVM vm = new FolderVM { IsShared = folder.IsShared, OwnerId = folder.OwnerId };
                 if (CheckEditAccess(vm, userId))
                 {
@@ -463,7 +500,6 @@ namespace FileRabbit.BLL.Services
                     ChangeChildrenAccess(folder, openAccess);
                 }
             }
-
             
             _database.Save();
 
@@ -493,6 +529,9 @@ namespace FileRabbit.BLL.Services
         // this method checks access to view the needed folder by current user
         public bool CheckAccessToView(FolderVM folder, string currentId)
         {
+            if (folder == null)
+                throw new StatusCodeException("Unable to check access to the folder.", StatusCodes.Status500InternalServerError);
+
             if (folder.IsShared)
                 return true;
             else
@@ -502,6 +541,9 @@ namespace FileRabbit.BLL.Services
         // this method checks access to view the needed file by current user
         public bool CheckAccessToView(FileVM file, string currentId)
         {
+            if (file == null)
+                throw new StatusCodeException("Unable to check access to the file.", StatusCodes.Status500InternalServerError);
+
             if (file.IsShared)
                 return true;
             else
@@ -511,6 +553,9 @@ namespace FileRabbit.BLL.Services
         // this method checks the current user for editing access to the needed folder
         public bool CheckEditAccess(FolderVM folder, string currentId)
         {
+            if (folder == null)
+                throw new StatusCodeException("Unable to check access to the folder.", StatusCodes.Status500InternalServerError);
+
             if (folder.OwnerId == currentId)
                 return true;
             return false;
@@ -519,17 +564,12 @@ namespace FileRabbit.BLL.Services
         // this method checks the current user for editing access to the needed file
         public bool CheckEditAccess(FileVM file, string currentId)
         {
+            if (file == null)
+                throw new StatusCodeException("Unable to check access to the file.", StatusCodes.Status500InternalServerError);
+
             if (file.OwnerId == currentId)
                 return true;
             return false;
-        }
-
-        // this method throws an exception with the necessary message and status code
-        private void ThrowException(string message, int statusCode)
-        {
-            Exception exception = new Exception(message);
-            exception.Data["Status code"] = statusCode;
-            throw exception;
         }
     }
 }

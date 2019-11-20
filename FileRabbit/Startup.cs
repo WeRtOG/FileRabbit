@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using AutoMapper;
 using FileRabbit.BLL.Interfaces;
 using FileRabbit.BLL.Services;
@@ -13,9 +9,7 @@ using FileRabbit.Infrastructure.DAL;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -80,8 +74,8 @@ namespace FileRabbit.PL
             }
             else
             {
-                app.UseStatusCodePagesWithReExecute("/Home/Error", "?statusCode={0}");
-                app.UseExceptionHandler("/Home/ServerError");
+                app.UseStatusCodePagesWithReExecute("/Error/Error", "?statusCode={0}");
+                app.UseExceptionHandler("/Error/ServerError");
 
                 app.UseHsts();
             }

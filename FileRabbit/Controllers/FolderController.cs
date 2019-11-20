@@ -35,10 +35,10 @@ namespace FileRabbit.PL.Controllers
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             // check access to needed folder
-            if (fileSystemService.CheckAccessToView(folder, userId))
+            if (fileSystemService.CheckAccessToView(folder, userId) || fileSystemService.HasSharedChildren(folderId))
             {
                 List<ElementVM> models = fileSystemService.GetElementsFromFolder(fileSystemService.GetFolderById(folderId), userId).ToList();
-                Stack<FolderShortInfoVM> folderPath = fileSystemService.GetFolderPath(folderId);
+                Stack<FolderShortInfoVM> folderPath = fileSystemService.GetFolderPath(folderId, userId);
 
                 ViewBag.FolderPath = folderPath;
 

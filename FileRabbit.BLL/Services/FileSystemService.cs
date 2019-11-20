@@ -99,7 +99,7 @@ namespace FileRabbit.BLL.Services
         }
 
         // this method return path to current folder as list
-        public Stack<FolderShortInfoVM> GetFolderPath(string currFolderId)
+        public Stack<FolderShortInfoVM> GetFolderPath(string currFolderId, string userId)
         {
             Stack<FolderShortInfoVM> folderPath = new Stack<FolderShortInfoVM>();
 
@@ -107,14 +107,23 @@ namespace FileRabbit.BLL.Services
             do
             {
                 Folder folder = _database.GetRepository<Folder>().Get(currFolderId);
-                FolderShortInfoVM folderInfo = new FolderShortInfoVM { Id = folder.Id, Name = ElementHelperClass.DefineFileName(folder.Path) };
-                currFolderId = folder.ParentFolderId;
-                if (folder.ParentFolderId == null)
+                if (folder == null)
+                    throw new StatusCodeException("Unable to define folder path.", StatusCodes.Status500InternalServerError);
+
+                FolderVM vm = new FolderVM { IsShared = folder.IsShared, OwnerId = folder.OwnerId };
+                if (CheckAccessToView(vm, userId) || HasSharedChildren(currFolderId))
                 {
-                    rootFolder = true;
-                    folderInfo.Name = "Your drive";
+                    FolderShortInfoVM folderInfo = new FolderShortInfoVM { Id = folder.Id, Name = ElementHelperClass.DefineFileName(folder.Path) };
+                    currFolderId = folder.ParentFolderId;
+                    if (folder.ParentFolderId == null)
+                    {
+                        rootFolder = true;
+                        folderInfo.Name = "Your drive";
+                    }
+                    folderPath.Push(folderInfo);
                 }
-                folderPath.Push(folderInfo);
+                else
+                    rootFolder = true;
             } while (!rootFolder);
 
             return folderPath;
@@ -448,62 +457,54 @@ namespace FileRabbit.BLL.Services
         // this method changes access to view for the selected folders and files and returns folder id
         public string ChangeAccess(string currFolderId, string userId, string[] foldersId, string[] filesId, bool openAccess)
         {
-            string idForLink;
-            if (foldersId.Length == 1 && filesId.Length == 0)
-                idForLink = foldersId[0];
-            else
+            Folder parent = _database.GetRepository<Folder>().Get(currFolderId);
+            if (parent == null)
+                throw new StatusCodeException($"The folder with ID = {currFolderId} doesn't exists.", StatusCodes.Status404NotFound);
+
+            FolderVM parentVM = new FolderVM { IsShared = parent.IsShared, OwnerId = parent.OwnerId };
+            if (CheckEditAccess(parentVM, userId))
             {
-                if (openAccess)
+
+                string idForLink;
+                if (foldersId.Length == 1 && filesId.Length == 0)
+                    idForLink = foldersId[0];
+                else
+                    idForLink = currFolderId;
+
+                foreach (string id in filesId)
                 {
-                    Folder folder = _database.GetRepository<Folder>().Get(currFolderId);
+                    DAL.Entities.File file = _database.GetRepository<DAL.Entities.File>().Get(id);
+                    if (file == null)
+                        throw new StatusCodeException($"The file with ID = {id} doesn't exists.", StatusCodes.Status404NotFound);
+
+                    FileVM vm = new FileVM { IsShared = file.IsShared, OwnerId = _database.GetRepository<Folder>().Get(file.FolderId).OwnerId };
+                    if (CheckEditAccess(vm, userId))
+                    {
+                        file.IsShared = openAccess;
+                        _database.GetRepository<DAL.Entities.File>().Update(file);
+                    }
+                }
+
+                foreach (string id in foldersId)
+                {
+                    Folder folder = _database.GetRepository<Folder>().Get(id);
                     if (folder == null)
-                        throw new StatusCodeException($"The folder with ID = {currFolderId} doesn't exists.", StatusCodes.Status404NotFound);
+                        throw new StatusCodeException($"The folder with ID = {id} doesn't exists.", StatusCodes.Status404NotFound);
 
                     FolderVM vm = new FolderVM { IsShared = folder.IsShared, OwnerId = folder.OwnerId };
                     if (CheckEditAccess(vm, userId))
                     {
                         folder.IsShared = openAccess;
                         _database.GetRepository<Folder>().Update(folder);
+                        ChangeChildrenAccess(folder, openAccess);
                     }
-                    else
-                        throw new StatusCodeException($"You don't have access to folder with ID = {currFolderId}.", 
-                            StatusCodes.Status403Forbidden);
                 }
-                idForLink = currFolderId;
+
+                _database.Save();
+                return idForLink;
             }
-
-            foreach (string id in filesId)
-            {
-                DAL.Entities.File file = _database.GetRepository<DAL.Entities.File>().Get(id);
-                if (file == null)
-                    throw new StatusCodeException($"The file with ID = {id} doesn't exists.", StatusCodes.Status404NotFound);
-
-                FileVM vm = new FileVM { IsShared = file.IsShared, OwnerId = _database.GetRepository<Folder>().Get(file.FolderId).OwnerId };
-                if (CheckEditAccess(vm, userId))
-                {
-                    file.IsShared = openAccess;
-                    _database.GetRepository<DAL.Entities.File>().Update(file);
-                }
-            }
-
-            foreach (string id in foldersId)
-            {
-                Folder folder = _database.GetRepository<Folder>().Get(id);
-                if (folder == null)
-                    throw new StatusCodeException($"The folder with ID = {id} doesn't exists.", StatusCodes.Status404NotFound);
-
-                FolderVM vm = new FolderVM { IsShared = folder.IsShared, OwnerId = folder.OwnerId };
-                if (CheckEditAccess(vm, userId))
-                {
-                    folder.IsShared = openAccess;
-                    _database.GetRepository<Folder>().Update(folder);
-                    ChangeChildrenAccess(folder, openAccess);
-                }
-            }
-            
-            _database.Save();
-
-            return idForLink;
+            else
+                throw new StatusCodeException($"You don't have access to folder with ID = {currFolderId}.", StatusCodes.Status403Forbidden);
         }
 
         // this method changes access to view for the children of the selected folder
@@ -524,6 +525,31 @@ namespace FileRabbit.BLL.Services
                 _database.GetRepository<Folder>().Update(folder);
                 ChangeChildrenAccess(folder, openAccess);
             }
+        }
+
+        // this method checks that the folder has shared children
+        public bool HasSharedChildren(string parentFolderId)
+        {
+            Folder parent = _database.GetRepository<Folder>().Get(parentFolderId);
+            if (parent == null)
+                throw new StatusCodeException($"The folder with ID = {parentFolderId} doesn't exists.", StatusCodes.Status404NotFound);
+
+            List<Folder> childFolders = _database.GetRepository<Folder>().Find(f => f.ParentFolderId == parent.Id).ToList();
+            List<DAL.Entities.File> childFiles = _database.GetRepository<DAL.Entities.File>().Find(f => f.FolderId == parent.Id).ToList();
+
+            foreach (var child in childFolders)
+            {
+                if (child.IsShared)
+                    return true;
+            }
+
+            foreach (var child in childFiles)
+            {
+                if (child.IsShared)
+                    return true;
+            }
+
+            return false;
         }
 
         // this method checks access to view the needed folder by current user

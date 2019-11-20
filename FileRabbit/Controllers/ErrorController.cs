@@ -40,7 +40,7 @@ namespace FileRabbit.PL.Controllers
             var exception = HttpContext.Features.Get<IExceptionHandlerFeature>();
 
             ErrorViewModel error = new ErrorViewModel();
-            if(exception.Error.Data["Status code"] != null)
+            if (exception.Error.Data["Status code"] != null)
                 HttpContext.Response.StatusCode = (int)exception.Error.Data["Status code"];
             error.ErrorCode = HttpContext.Response.StatusCode;
             error.Message = exception.Error.Message;

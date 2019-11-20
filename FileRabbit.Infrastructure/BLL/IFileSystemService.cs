@@ -16,12 +16,13 @@ namespace FileRabbit.BLL.Interfaces
         FolderVM GetFolderById(string id);
         FileVM GetFileById(string id);
         ICollection<ElementVM> GetElementsFromFolder(FolderVM folder, string userId);
-        Stack<FolderShortInfoVM> GetFolderPath(string currFolderId);
+        Stack<FolderShortInfoVM> GetFolderPath(string currFolderId, string userId);
         MemoryStream CreateArchive(string currFolderId, string userId, string[] foldersId, string[] filesId);
         bool RemoveFilesAndFolders(string userId, string[] foldersId, string[] filesId);
         bool RenameFolder(string newName, string folderId);
         bool RenameFile(string newName, string fileId);
         string ChangeAccess(string currFolderId, string userId, string[] foldersId, string[] filesId, bool openAccess);
+        bool HasSharedChildren(string parentFolderId);
         bool CheckAccessToView(FolderVM folder, string currentId);
         bool CheckAccessToView(FileVM file, string currentId);
         bool CheckEditAccess(FolderVM folder, string currentId);

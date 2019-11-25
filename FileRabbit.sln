@@ -30,7 +30,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileRabbit.Infrastructure",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileRabbit.ViewModels", "FileRabbit.ViewModels\FileRabbit.ViewModels.csproj", "{A08FC8F7-9A19-412A-8422-B669CA4B466D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileRabbit.DAL.Entities", "FileRabbit.DAL.Entities\FileRabbit.DAL.Entities.csproj", "{389E0DF3-BACB-4890-9C5A-3EE25990DE12}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileRabbit.DAL.Entities", "FileRabbit.DAL.Entities\FileRabbit.DAL.Entities.csproj", "{389E0DF3-BACB-4890-9C5A-3EE25990DE12}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileRabbit.Tests", "FileRabbit.Tests\FileRabbit.Tests.csproj", "{80F48726-DAD2-4035-8690-CB1A485D3A0F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -62,6 +64,10 @@ Global
 		{389E0DF3-BACB-4890-9C5A-3EE25990DE12}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{389E0DF3-BACB-4890-9C5A-3EE25990DE12}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{389E0DF3-BACB-4890-9C5A-3EE25990DE12}.Release|Any CPU.Build.0 = Release|Any CPU
+		{80F48726-DAD2-4035-8690-CB1A485D3A0F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{80F48726-DAD2-4035-8690-CB1A485D3A0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{80F48726-DAD2-4035-8690-CB1A485D3A0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{80F48726-DAD2-4035-8690-CB1A485D3A0F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

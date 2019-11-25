@@ -14,7 +14,6 @@ using ICSharpCode.SharpZipLib.Core;
 using ICSharpCode.SharpZipLib.Zip;
 using Microsoft.AspNetCore.StaticFiles;
 using FileRabbit.BLL.Exceptions;
-//using Ionic.Zip;
 
 namespace FileRabbit.BLL.Services
 {
@@ -60,7 +59,8 @@ namespace FileRabbit.BLL.Services
                             Type = ElementVM.FileType.Folder,
                             ElemName = elem.Name,
                             LastModified = elem.LastWriteTime.ToShortDateString(),
-                            Size = null
+                            Size = null,
+                            IsShared = folder.IsShared
                         };
 
                         models.Add(model);
@@ -88,7 +88,8 @@ namespace FileRabbit.BLL.Services
                             Type = type,
                             ElemName = elem.Name,
                             LastModified = elem.LastWriteTime.ToShortDateString(),
-                            Size = size
+                            Size = size,
+                            IsShared = file.IsShared
                         };
                         models.Add(model);
                     }
@@ -234,7 +235,8 @@ namespace FileRabbit.BLL.Services
                         ElemName = uploadedFile.FileName,
                         LastModified = DateTime.Now.ToShortDateString(),
                         Type = ElementHelperClass.DefineFileType(ElementHelperClass.DefineFileExtension(uploadedFile.FileName)),
-                        Size = ElementHelperClass.Recount(new Tuple<double, ElementVM.Unit>(uploadedFile.Length, ElementVM.Unit.B))
+                        Size = ElementHelperClass.Recount(new Tuple<double, ElementVM.Unit>(uploadedFile.Length, ElementVM.Unit.B)),
+                        IsShared = file.IsShared
                     };
                     elements.Add(elem);
                 }

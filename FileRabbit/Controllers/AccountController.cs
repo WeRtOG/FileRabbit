@@ -1,29 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.IO;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
-using FileRabbit.BLL.Interfaces;
-using AutoMapper;
-using FileRabbit.ViewModels;
+﻿using FileRabbit.BLL.Interfaces;
 using FileRabbit.Infrastructure.BLL;
+using FileRabbit.ViewModels;
+using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Threading.Tasks;
 
 namespace FileRabbit.PL.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly IAuthorizationService authorizationService;
-        private readonly IFileSystemService fileSystemService;
-        private readonly IMapper mapper;
+        private readonly IAuthorizationService _authorizationService;
+        private readonly IFileSystemService _fileSystemService;
 
-        public AccountController(IAuthorizationService auth, IFileSystemService service, IMapper mapper)
+        public AccountController(IAuthorizationService auth, IFileSystemService service)
         {
-            authorizationService = auth;
-            fileSystemService = service;
-            this.mapper = mapper;
+            _authorizationService = auth;
+            _fileSystemService = service;
         }
 
         #region Register
@@ -52,13 +44,13 @@ namespace FileRabbit.PL.Controllers
                     UserName = model.UserName, 
                     Password = model.Password 
                 };
-                var result = await authorizationService.CreateUser(user);
+                var result = await _authorizationService.CreateUser(user);
 
                 // if registration is successful, go to new empty folder of user
                 if (result.Succeeded)
                 {
-                    await authorizationService.SignIn(user, false);
-                    fileSystemService.CreateFolder(user.Id);    // new root folder creating
+                    await _authorizationService.SignIn(user, false);
+                    _fileSystemService.CreateFolder(user.Id);    // new root folder creating
                     string folderId = user.Id;
                     return RedirectToAction("Watch", "Folder", new { folderId });
                 }
@@ -94,11 +86,11 @@ namespace FileRabbit.PL.Controllers
             if (ModelState.IsValid)
             {
                 // try to sign in
-                var result = await authorizationService.SignInWithPassword(model);
+                var result = await _authorizationService.SignInWithPassword(model);
                 if (result.Succeeded)
                 {
                     // after successful login redirect to root folder of the user
-                    var user = await authorizationService.FindByName(model.UserName);
+                    var user = await _authorizationService.FindByName(model.UserName);
                     var userId = user.Id;
                     if (userId != null)
                         return RedirectToAction("Watch", "Folder", new { folderId = user.Id });
@@ -118,7 +110,7 @@ namespace FileRabbit.PL.Controllers
         public async Task<IActionResult> LogOff()
         {
             // удаляем аутентификационные куки
-            await authorizationService.SignOut();
+            await _authorizationService.SignOut();
             return RedirectToAction("Index", "Home");
         }
         #endregion

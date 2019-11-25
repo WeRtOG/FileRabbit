@@ -20,7 +20,7 @@ namespace FileRabbit.BLL.Services
         public AuthorizationService(IUnitOfWork unit, IMapper mapper)
         {
             _database = unit;
-            this._mapper = mapper;
+            _mapper = mapper;
         }
 
         // this method creates a new user

@@ -21,5 +21,7 @@ namespace FileRabbit.ViewModels
         public string LastModified { get; set; }
 
         public Tuple<double, Unit> Size { get; set; }
+
+        public bool IsShared { get; set; }
     }
 }

@@ -1,11 +1,11 @@
-﻿@model IEnumerable<FileRabbit.ViewModels.ElementVM>
+﻿@model FileRabbit.ViewModels.WatchPageVM
 @{
     ViewData["Title"] = "Watch";
 }
 
 <section class="action-bar">
     <div class="path">
-        @foreach (var elem in ViewBag.FolderPath)
+        @foreach (var elem in Model.FolderPath)
         {
             ViewBag.Link = @Url.Action("Watch", "Folder") + "?folderId=";
             <a class="text-white path-separator anix" data-fx="move" data-hold="10">
@@ -52,15 +52,16 @@
 
 <section class="file-bar">
     <table class="text-white file-table anix" data-fx="move" data-direction="down" data-hold="10">
-        @if (ViewBag.Empty == false)
+        @if (Model.Elements.Count != 0)
         {
             <tr class="head-box">
                 <th width="28"></th>
                 <th>Name</th>
                 <th>Last change</th>
                 <th>Size</th>
+                <th>Shared</th>
             </tr>
-            @foreach (var elem in Model)
+            @foreach (var elem in Model.Elements)
             {
                 <tr class="drive-row" data-isfolder="@elem.IsFolder" data-id="@elem.Id">
                     @switch (elem.Type.ToString())
@@ -94,6 +95,7 @@
                     {
                         <td>@elem.Size.Item1 @elem.Size.Item2</td>
                     }
+                    <td>@elem.IsShared</td>
                 </tr>
             }
         }
@@ -125,7 +127,7 @@
             </div>
             <div class="modal-body">
                 <form class="upload" asp-action="Upload" asp-controller="Folder" method="post" enctype="multipart/form-data">
-                    <input type="hidden" value="@ViewBag.CurrFolderId" name="folderId" />
+                    <input type="hidden" value="@Model.CurrFolderId" name="folderId" />
                     <input type="file" name="uploads" multiple="multiple" />
                     <input type="submit" value="Upload" />
                 </form>
@@ -144,7 +146,7 @@
             </div>
             <div class="modal-body">
                 <form class="addfolder" asp-action="AddFolder" asp-controller="Folder" method="post" enctype="multipart/form-data">
-                    <input type="hidden" value="@ViewBag.CurrFolderId" name="folderId" />
+                    <input type="hidden" value="@Model.CurrFolderId" name="folderId" />
                     <input type="text" name="newFolderName" placeholder="Name" />
                     <input type="submit" value="Create folder" />
                 </form>
@@ -172,13 +174,3 @@
         </div>
     </div>
 </div>
-
-<script>
-    function OpenFolder(id) {
-        $.get({
-            url: "Folder/Watch",
-            contentType: "application/json",
-            data: JSON.stringify({ folderId: id })
-        })
-    }
-</script>

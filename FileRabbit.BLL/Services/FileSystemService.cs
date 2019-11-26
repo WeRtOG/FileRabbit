@@ -536,8 +536,8 @@ namespace FileRabbit.BLL.Services
             if (parent == null)
                 throw new StatusCodeException($"The folder with ID = {parentFolderId} doesn't exists.", StatusCodes.Status404NotFound);
 
-            List<Folder> childFolders = _database.GetRepository<Folder>().Find(f => f.ParentFolderId == parent.Id).ToList();
-            List<DAL.Entities.File> childFiles = _database.GetRepository<DAL.Entities.File>().Find(f => f.FolderId == parent.Id).ToList();
+            IEnumerable<Folder> childFolders = _database.GetRepository<Folder>().Find(f => f.ParentFolderId == parent.Id).ToList();
+            IEnumerable<DAL.Entities.File> childFiles = _database.GetRepository<DAL.Entities.File>().Find(f => f.FolderId == parent.Id).ToList();
 
             foreach (var child in childFolders)
             {

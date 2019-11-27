@@ -13,5 +13,19 @@ namespace FileRabbit.ViewModels
         public string FolderId { get; set; }
         public string OwnerId { get; set; }
         public bool IsShared { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            FileVM file = obj as FileVM;
+            if (Id == file.Id && Path == file.Path && FolderId == file.FolderId && OwnerId == file.OwnerId 
+                && IsShared == file.IsShared && Name == file.Name && ContentType == file.ContentType)
+                return true;
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
 }

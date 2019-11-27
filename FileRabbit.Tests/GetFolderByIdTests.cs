@@ -31,7 +31,7 @@ namespace FileRabbit.Tests
             // arrange
             Folder folderFromDB = new Folder { 
                 Id = "23",
-                Path = "C:/User/MyFolder",
+                Path = "C:\\User\\MyFolder",
                 OwnerId = "User",
                 ParentFolderId = "1",
                 IsShared = false
@@ -42,7 +42,7 @@ namespace FileRabbit.Tests
             FolderVM expected = new FolderVM
             {
                 Id = "23",
-                Path = "C:/User/MyFolder",
+                Path = "C:\\User\\MyFolder",
                 OwnerId = "User",
                 ParentFolderId = "1",
                 IsShared = false
@@ -56,7 +56,7 @@ namespace FileRabbit.Tests
         }
 
         [Test]
-        public void GetFolderById_Returns404StatusCode()
+        public void GetFolderById_Returns404StatusCodeIfFolderIsNull()
         {
             // arrange
             Folder folderFromDB = null;

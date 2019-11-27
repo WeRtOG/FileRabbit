@@ -32,6 +32,9 @@ namespace FileRabbit.BLL.Services
         // this method returns all folders and files that are contained in the needed folder
         public ICollection<ElementVM> GetElementsFromFolder(FolderVM folderVM, string userId)
         {
+            if (folderVM == null)
+                throw new StatusCodeException("The needed folder doesn't exists.", StatusCodes.Status404NotFound);
+
             DirectoryInfo dir = new DirectoryInfo(folderVM.Path);
             FileInfo[] files;
             DirectoryInfo[] dirs;
@@ -46,7 +49,6 @@ namespace FileRabbit.BLL.Services
 
             foreach (var elem in dirs)
             {
-                string s = childFolders[0].Path;
                 Folder folder = childFolders.Find(f => f.Path == elem.FullName);
                 if (folder != null)
                 {
@@ -163,6 +165,9 @@ namespace FileRabbit.BLL.Services
         // this method creates a new folder on the hard drive, saves it in the database and return it
         public ElementVM CreateFolder(FolderVM parentFolder, string name, string ownerId)
         {
+            if (parentFolder == null)
+                throw new StatusCodeException("Unable to create new folder.", StatusCodes.Status500InternalServerError);
+
             string newFolderPath = parentFolder.Path + '\\' + name;
             if (!Directory.Exists(newFolderPath))
             {
@@ -536,8 +541,8 @@ namespace FileRabbit.BLL.Services
             if (parent == null)
                 throw new StatusCodeException($"The folder with ID = {parentFolderId} doesn't exists.", StatusCodes.Status404NotFound);
 
-            List<Folder> childFolders = _database.GetRepository<Folder>().Find(f => f.ParentFolderId == parent.Id).ToList();
-            List<DAL.Entities.File> childFiles = _database.GetRepository<DAL.Entities.File>().Find(f => f.FolderId == parent.Id).ToList();
+            IEnumerable<Folder> childFolders = _database.GetRepository<Folder>().Find(f => f.ParentFolderId == parent.Id).ToList();
+            IEnumerable<DAL.Entities.File> childFiles = _database.GetRepository<DAL.Entities.File>().Find(f => f.FolderId == parent.Id).ToList();
 
             foreach (var child in childFolders)
             {

@@ -1,13 +1,9 @@
 ﻿using AutoMapper;
-using FileRabbit.BLL.Interfaces;
 using FileRabbit.DAL.Entities;
 using FileRabbit.Infrastructure.BLL;
 using FileRabbit.Infrastructure.DAL;
 using FileRabbit.ViewModels;
 using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace FileRabbit.BLL.Services

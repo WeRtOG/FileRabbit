@@ -165,7 +165,7 @@ namespace FileRabbit.Tests
             int expected = 404;
 
             // act
-            StatusCodeException ex = Assert.Throws<StatusCodeException>(() => service.GetFolderById("23"));
+            StatusCodeException ex = Assert.Throws<StatusCodeException>(() => service.HasSharedChildren("23"));
 
             // assert
             Assert.AreEqual(expected, ex.Data["Status code"]);

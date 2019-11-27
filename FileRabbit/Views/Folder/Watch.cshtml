@@ -63,7 +63,7 @@
             </tr>
             @foreach (var elem in Model.Elements)
             {
-                <tr class="drive-row" data-isfolder="@elem.IsFolder" data-id="@elem.Id">
+                <tr class="drive-row" data-isfolder="@elem.IsFolder" data-id="@elem.Id" data-type="@elem.Type.ToString()">
                     @switch (elem.Type.ToString())
                     {
                         case "Document":
@@ -85,7 +85,7 @@
                             <td class="icon"><i class="material-icons">insert_drive_file</i></td>
                             break;
                     }
-                    <td>@elem.ElemName</td>
+                    <td class="filename">@elem.ElemName</td>
                     <td>@elem.LastModified</td>
                     @if (elem.Size == null)
                     {
@@ -95,7 +95,18 @@
                     {
                         <td>@elem.Size.Item1 @elem.Size.Item2</td>
                     }
-                    <td>@elem.IsShared</td>
+                    @if (elem.IsShared)
+                    {
+                        <td class="icon">
+                            <i class="material-icons">
+                                link
+                            </i>
+                        </td>
+                    }
+                    else
+                    {
+                        <td></td>
+                    }
                 </tr>
             }
         }

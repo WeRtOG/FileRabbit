@@ -62,8 +62,28 @@ html {
 
 body {
   /* Margin bottom by footer height */
-  background: #333;
+  background-color: #222;
   border: none;
+}
+.home-box {
+    background-image: url(/img/home-bg.jpg);
+    background-position: center;
+    background-size: cover;
+    height: 100%;
+}
+.home-box * {
+    position: relative;
+    z-index: 2;
+}
+.home-box::after {
+    position: absolute;
+    left: 0;
+    top: 0;
+    content: "";
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,.6);
+    z-index: 1;
 }
 .footer {
   position: absolute;
@@ -123,6 +143,12 @@ form .ui-startworking:active {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+.nav-item i {
+    margin-right: 5px;
+}
+.nav-item a:hover {
+    color: white !important;
 }
 .container {
     margin: 0;
@@ -244,7 +270,8 @@ select:-webkit-autofill:focus {
 }
 .nav-item.user {
     width: 150px;
-    background: rgba(0,0,0,.03);
+    background: rgba(0,0,0,.2);
+    margin-right: 10px;
 }
 .nav-item.user a {
     display: flex;
@@ -434,4 +461,133 @@ select:-webkit-autofill:focus {
 .modal-content input:hover {
     background: #4d4d4d;
 }
+.progress-bar-window {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: #444;
+    border-radius: 10px;
+    width: 400px;
+    box-shadow: 0px 10px 28px 0px rgba(0,0,0,0.3);
+    padding: 20px;
+    color: #ddd;
+    transition: all 0.3s ease;
+}
+.progress-bar-window.hide {
+    opacity: 0;
+    transform: translateY(30px);
+}
+.progress-bar-window .info {
+    margin-bottom: 7px;
+}
+.progress-bar-window .bar {
+    overflow: hidden;
+    width: 100%;
+    background: rgba(255,255,255,.1);
+    border-radius: 20px;
+}
+.progress-bar-window .bar .item {
+    width: 1%;
+    height: 20px;
+    background: #ddd;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+}
+.file-view {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(24,24,24,.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+.file-view .wrap {
+    width: 90%;
+    height: 80%;
+    box-shadow: 0px 10px 28px 0px rgba(0,0,0,0.3);
+    position: relative;
+    transition: all 0.3s ease;
+    background: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.file-view.hide {
+    opacity: 0;
+}
+.file-view.hide .wrap {
+    transform: scale(0.9);
+}
+.file-view .wrap img, .file-view .wrap video, .file-view .wrap iframe, .file-view .wrap .no-data {
+    height: 100%;
+    border: none;
+    outline: none;
+}
+.file-view .wrap video, .file-view .wrap iframe, .file-view .wrap .no-data {
+    width: 100%;
+}
+.file-view .wrap audio {
+    border: none;
+    outline: none;
+    margin: auto;
+}
+.file-view .wrap .no-data {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.file-view .wrap .no-data div {
+    text-align: center;
+}
+.file-view .wrap .no-data button {
+    background: transparent;
+    padding: 10px;
+    border: 2px solid #999;
+    border-radius: 40px;
+    color: #999;
+    display: block;
+    margin: auto;
+    margin-top: 20px;
+    width: 150px;
+    transition: all 0.3s ease;
+    outline: none;
+}
+.file-view .wrap .no-data button:hover {
+    color: #ddd;
+    border-color: #ddd;
+}
+.file-view .wrap .no-data h1 {
+    text-align: center;
+    color: #999;
+}
+.file-view .wrap video {
+    background: #000;
+}
+.file-view .wrap .close-button {
+    position: absolute;
+    right: -20px;
+    top: -20px;
+    width: 40px;
+    height: 40px;
+    background: #444;
+    border-radius: 100%;
+    border: none;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0px 10px 28px 0px rgba(0,0,0,0.3);
+    z-index: 999;
+}
+.error-404 {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }

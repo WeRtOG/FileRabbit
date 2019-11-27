@@ -1,0 +1,112 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" preserveAspectRatio="none" x="0px" y="0px" width="1920px" height="1080px" viewBox="0 0 1920 1080">
+<defs>
+<linearGradient id="Gradient_1" gradientUnits="userSpaceOnUse" x1="298.45" y1="543.7" x2="298.45" y2="-165.50000000000003" spreadMethod="pad">
+<stop  offset="0%" stop-color="#FFFFFF" stop-opacity="0.00784313725490196"/>
+
+<stop  offset="100%" stop-color="#FFFFFF" stop-opacity="0.11764705882352941"/>
+</linearGradient>
+
+<filter id="Filter_1" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+<feColorMatrix in="SourceGraphic" type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0.25 0" result="result1"/>
+</filter>
+
+<filter id="Filter_2" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+<feColorMatrix in="SourceGraphic" type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0.27 0" result="result1"/>
+</filter>
+
+<filter id="Filter_3" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+<feColorMatrix in="SourceGraphic" type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0.0675 0" result="result1"/>
+</filter>
+
+<filter id="Filter_4" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+<feColorMatrix in="SourceGraphic" type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0.1728 0" result="result1"/>
+</filter>
+
+<g id="Symbol_1_0_Layer0_0_FILL">
+<path fill="url(#Gradient_1)" stroke="none" d="
+M 596.95 298.45
+Q 596.95 174.8 509.55 87.4 422.15 0 298.5 0 174.85 0 87.45 87.4 0 174.8 0 298.45 0 422.1 87.45 509.55 174.85 596.95 298.5 596.95 422.15 596.95 509.55 509.55 596.95 422.1 596.95 298.45 Z"/>
+</g>
+</defs>
+
+<g transform="matrix( 1, 0, 0, 1, 1587.5,536.8) ">
+<g transform="matrix( 1, 0, 0, 1, 0,0) ">
+<use filter="url(#Filter_1)" xlink:href="#Symbol_1_0_Layer0_0_FILL"/>
+</g>
+</g>
+
+<g transform="matrix( 1, 0, 0, 1, 179.3,417.2) ">
+<g transform="matrix( 1, 0, 0, 1, 0,0) ">
+<use filter="url(#Filter_1)" xlink:href="#Symbol_1_0_Layer0_0_FILL"/>
+</g>
+</g>
+
+<g transform="matrix( 1, 0, 0, 1, 1134.7,363.45) ">
+<g transform="matrix( 1, 0, 0, 1, 0,0) ">
+<use filter="url(#Filter_1)" xlink:href="#Symbol_1_0_Layer0_0_FILL"/>
+</g>
+</g>
+
+<g transform="matrix( 1, 0, 0, 1, 620.55,417.2) ">
+<g transform="matrix( 1, 0, 0, 1, 0,0) ">
+<use filter="url(#Filter_1)" xlink:href="#Symbol_1_0_Layer0_0_FILL"/>
+</g>
+</g>
+
+<g transform="matrix( 1, 0, 0, 1, -242.75,536.8) ">
+<g transform="matrix( 1, 0, 0, 1, 1711.45,206.75) ">
+<g transform="matrix( 1, 0, 0, 1, 0,0) ">
+<use filter="url(#Filter_2)" xlink:href="#Symbol_1_0_Layer0_0_FILL"/>
+</g>
+</g>
+
+<g transform="matrix( 1, 0, 0, 1, 0,0) ">
+<g transform="matrix( 1, 0, 0, 1, 0,0) ">
+<use filter="url(#Filter_3)" xlink:href="#Symbol_1_0_Layer0_0_FILL"/>
+</g>
+</g>
+
+<g transform="matrix( 1, 0, 0, 1, 203.35,145.15) ">
+<g transform="matrix( 1, 0, 0, 1, 0,0) ">
+<use filter="url(#Filter_4)" xlink:href="#Symbol_1_0_Layer0_0_FILL"/>
+</g>
+</g>
+
+<g transform="matrix( 1, 0, 0, 1, 596.95,317.85) ">
+<g transform="matrix( 1, 0, 0, 1, 0,0) ">
+<use filter="url(#Filter_2)" xlink:href="#Symbol_1_0_Layer0_0_FILL"/>
+</g>
+</g>
+
+<g transform="matrix( 1, 0, 0, 1, 1070.5,76.1) ">
+<g transform="matrix( 1, 0, 0, 1, 0,0) ">
+<use filter="url(#Filter_4)" xlink:href="#Symbol_1_0_Layer0_0_FILL"/>
+</g>
+</g>
+
+<g transform="matrix( 1, 0, 0, 1, 596.95,19.4) ">
+<g transform="matrix( 1, 0, 0, 1, 0,0) ">
+<use filter="url(#Filter_4)" xlink:href="#Symbol_1_0_Layer0_0_FILL"/>
+</g>
+</g>
+
+<g transform="matrix( 1, 0, 0, 1, 1273.85,225.75) ">
+<g transform="matrix( 1, 0, 0, 1, 0,0) ">
+<use filter="url(#Filter_2)" xlink:href="#Symbol_1_0_Layer0_0_FILL"/>
+</g>
+</g>
+
+<g transform="matrix( 1, 0, 0, 1, 863.3,225.75) ">
+<g transform="matrix( 1, 0, 0, 1, 0,0) ">
+<use filter="url(#Filter_2)" xlink:href="#Symbol_1_0_Layer0_0_FILL"/>
+</g>
+</g>
+
+<g transform="matrix( 1, 0, 0, 1, 1531.8,0) ">
+<g transform="matrix( 1, 0, 0, 1, 0,0) ">
+<use filter="url(#Filter_4)" xlink:href="#Symbol_1_0_Layer0_0_FILL"/>
+</g>
+</g>
+</g>
+</svg>

@@ -1,10 +1,11 @@
-﻿// Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
-
-// Write your JavaScript code.
-function updateTable() {
+﻿function updateTable(noanim) {
     $(".file-bar").load(window.location.href + " .file-table", function () {
-        anix_do($("html").find(".anix"));
+        if (!noanim) {
+            anix_do($("html").find(".anix"));
+        } else {
+            $("html").find(".anix").css("opacity", "1");
+        }
+        
         $("html").find("table .no-data").parent().parent().css("min-height", "100%");
         if ($("html").find("table .no-data").length > 0) {
             $(".actions .active").addClass("inactive");
@@ -23,12 +24,29 @@ function Upload(files, folderId, token) {
     formData.append("folderId", folderId);
     formData.append("__RequestVerificationToken", token);
 
-    fetch("Upload", {
-        method: 'POST',
-        body: formData,
-    }).then(response => {
-        updateTable();
-        console.log(response);
+    $.ajax({
+        type: 'post',
+        url: 'Upload',
+        processData: false,
+        contentType: false,
+        beforeSend: function () {
+            UploadBeforeSubmit();
+        },
+        xhr: function () {
+            var xhr = new window.XMLHttpRequest();
+            xhr.upload.addEventListener("progress", function (evt) {
+                if (evt.lengthComputable) {
+                    var percentComplete = evt.loaded / evt.total;
+                    percentComplete = parseInt(percentComplete * 100);
+                    UploadProgress(percentComplete);
+                }
+            }, false);
+            return xhr;
+        },
+        data: formData,
+        success: function () {
+            UploadSuccess();
+        }
     });
 }
 $(".file-bar").on("dragover", function (event) {
@@ -63,9 +81,39 @@ $('form.addfolder').ajaxForm(function (response) {
     updateTable();
     $("#folderCreate").modal("hide");
 });
-$('form.upload').ajaxForm(function (response) {
-    updateTable();
+function UploadBeforeSubmit() {
+    $("html").append('<div class="progress-bar-window hide"><div class="info"></div><div class="bar"><div class="item"></div></div></div>');
+    setTimeout(function () {
+        $("html").find(".progress-bar-window").removeClass("hide");
+    }, 20);
     $("#fileUpload").modal("hide");
+}
+function UploadProgress(percentComplete) {
+    if (percentComplete == 100) {
+        text = "Processing in progress...";
+    } else {
+        text = "Uploading " + percentComplete + "%";
+    }
+    $("html").find(".progress-bar-window .info").text(text);
+    $("html").find(".progress-bar-window .item").width(percentComplete + "%");
+}
+function UploadSuccess() {
+    updateTable();
+    $("html").find(".progress-bar-window").addClass("hide");
+    setTimeout(function () {
+        $("html").find(".progress-bar-window").detach();
+    }, 300);
+}
+$('form.upload').ajaxForm({
+    beforeSubmit: function () {
+        UploadBeforeSubmit();
+    },
+    uploadProgress: function (event, position, total, percentComplete) {
+        UploadProgress(percentComplete);
+    }, 
+    success: function(response) {
+        UploadSuccess();
+    }
 });
 $('form.renameitem').ajaxForm(function (response) {
     updateTable();
@@ -127,6 +175,7 @@ function ShareSelected() {
         success: function (response) {
             var url = "https://localhost:44350/Folder/Watch?folderId=" + response;
             bootbox.alert('Ваша ссылка готова:<br><input value="' + url + '"/>');
+            updateTable(true);
         }
     });
 }
@@ -201,7 +250,7 @@ function DownloadSelected() {
     //alert(location.protocol + '//' + location.host + '/Folder/DownloadMultiple' + request_params);
     window.location.href = location.protocol + '//' + location.host + '/Folder/DownloadMultiple' + request_params;
 }
-$("html").on("click", ".action-bar .download.active", function () {
+$("html").on("click", ".action-bar .download.active, [data-action=download]", function () {
     var count = $(".file-table tr.selected").length;
 
     if (count == 1) {
@@ -230,12 +279,53 @@ $("html").on("keydown", ".file-table", function (e) {
     }
 });
 $("html").on("dblclick", ".file-table tr.drive-row", function () {
+    $("html").find(".file-table tr.selected").removeClass("selected");
+    $(this).addClass("selected");
+    ActionBarLogic();
+
     var isfolder = $(this).attr("data-isfolder") === "True";
+    var type = $(this).attr("data-type");
     var fId = $(this).attr("data-id");
+    var filename = $(this).find(".filename").text();
+    var ext = filename.split(".")[1];
+
     if (isfolder) {
         window.location.href = location.protocol + '//' + location.host + location.pathname + '?folderId=' + fId;
     } else {
-        window.location.href = location.protocol + '//' + location.host + '/Folder/Download?fileId=' + fId;
+        var viewURL = location.protocol + '//' + location.host + '/Folder/DisplayFile?fileId=' + fId;
+        var appendView = "";
+
+        switch (type) {
+            case "Image":
+                appendView = '<img src="' + viewURL + '"/>';
+                break;
+            case "Video":
+                appendView = '<video autoplay controls src="' + viewURL + '"></video>';
+                break;
+            case "Audio":
+                appendView = '<audio autoplay controls src="' + viewURL + '"></audio>';
+                break;
+            default:
+                switch (ext) {
+                    case "pdf":
+                        appendView = '<iframe src="' + viewURL + '"/>';
+                        break;
+                    default:
+                        appendView = '<div class="no-data"><div><h1>No preview available</h1><button data-action="download">Download</button></div></div>';
+                        break;
+                }
+                break;
+        }
+        $("html").append('<div class="file-view hide"><div class="wrap"><div class="close-button"><i class="material-icons">close</i></div>' + appendView + '</div></div>');
+        setTimeout(function () {
+            $("html").find(".file-view").removeClass("hide");
+        }, 10);
     }
+});
+$("html").on("click", ".file-view .close-button", function () {
+    $("html").find(".file-view").addClass("hide");
+    setTimeout(function () {
+        $("html").find(".file-view").detach();
+    }, 300);
 });
 //alert(1);

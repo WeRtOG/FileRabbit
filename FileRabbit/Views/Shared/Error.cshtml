@@ -3,7 +3,16 @@
     ViewData["Title"] = "Error";
 }
 
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
-<h2 class="text-danger">Error code: @Model.ErrorCode</h2>
-<h2 class="text-danger">Message: @Model.Message</h2>
+@if (Model.ErrorCode == 404)
+{
+    <div class="error-404">
+        <img src="~/img/404.svg" />
+    </div>
+}
+else
+{
+    <h1 class="text-danger">Error.</h1>
+    <h2 class="text-danger">An error occurred while processing your request.</h2>
+    <h2 class="text-danger">Error code: @Model.ErrorCode</h2>
+    <h2 class="text-danger">Message: @Model.Message</h2>
+}

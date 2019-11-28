@@ -47,6 +47,11 @@
                 delete_sweep
             </i>
         </button>
+        <button class="unshare inactive">
+            <i class="material-icons">
+                link_off
+            </i>
+        </button>
     </div>
 </section>
 
@@ -63,7 +68,7 @@
             </tr>
             @foreach (var elem in Model.Elements)
             {
-                <tr class="drive-row" data-isfolder="@elem.IsFolder" data-id="@elem.Id" data-type="@elem.Type.ToString()">
+                <tr class="drive-row" data-isfolder="@elem.IsFolder" data-isshared="@elem.IsShared" data-id="@elem.Id" data-type="@elem.Type.ToString()">
                     @switch (elem.Type.ToString())
                     {
                         case "Document":

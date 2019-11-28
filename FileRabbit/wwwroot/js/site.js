@@ -132,6 +132,8 @@ $(function () {
 })
 function ActionBarLogic() {
     var count = $(".file-table tr.selected").length;
+    var sharedcount = $('.file-table tr.selected[data-isshared=True]').length;
+
     if (count == 1) {
         $(".renameitem .elementId").attr("value", $(".file-table tr.drive-row.selected").attr("data-id"));
         $(".renameitem .isFolder").attr("value", $(".file-table tr.drive-row.selected").attr("data-isfolder"));
@@ -147,6 +149,13 @@ function ActionBarLogic() {
     } else {
         $(".actions .active").addClass("inactive");
         $(".actions .active").removeClass("active");
+    }
+    if (sharedcount > 0 && count > 0) {
+        $(".actions .unshare").removeClass("inactive");
+        $(".actions .unshare").addClass("active");
+    } else {
+        $(".actions .unshare").addClass("inactive");
+        $(".actions .unshare").removeClass("active");
     }
 }
 //[{"id":"21ac6039-8ee7-4c32-a894-8ac6e2178f01","isFolder":false,"type":1,"elemName":"Компьютерная графика.docx","lastModified":"05.11.2019","size":{"item1":225.4,"item2":1}}]
@@ -174,7 +183,7 @@ function ShareSelected() {
         traditional: true,
         success: function (response) {
             var url = "https://localhost:44350/Folder/Watch?folderId=" + response;
-            bootbox.alert('Ваша ссылка готова:<br><input value="' + url + '"/>');
+            bootbox.alert('Your link is ready:<br><input value="' + url + '"/>');
             updateTable(true);
         }
     });
@@ -212,7 +221,47 @@ function DeleteSelected() {
                     traditional: true,
                     success: function (response) {
                         updateTable();
+                        ActionBarLogic();
+                    }
+                });
+            }
+        }
+    });
+}
+function UnshareSelected() {
+    var count = $(".file-table tr.selected[data-isshared=True]").length;
+    if (count == 0) return;
+    bootbox.confirm({
+        message: "Are you sure?",
+        buttons: {
+            confirm: {
+                label: 'Yes',
+            },
+            cancel: {
+                label: 'No',
+            }
+        },
+        callback: function (result) {
+            if (result) {
+                var foldersId = [];
+                $(".file-table tr.drive-row.selected[data-isfolder=True]").each(function () {
+                    foldersId.push($(this).attr("data-id"));
+                });
 
+                var filesId = [];
+                $(".file-table tr.drive-row.selected[data-isfolder=False]").each(function () {
+                    filesId.push($(this).attr("data-id"));
+                });
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/Folder/Share',
+                    data: { currFolderId: $_GET['folderId'], foldersId: foldersId, filesId: filesId, openAccess: false },
+
+                    traditional: true,
+                    success: function (response) {
+                        updateTable();
+                        ActionBarLogic();
                     }
                 });
             }
@@ -264,6 +313,9 @@ $("html").on("click", ".action-bar .download.active, [data-action=download]", fu
     } else if (count > 1) {
         DownloadSelected();
     }
+});
+$("html").on("click", ".action-bar .unshare.active", function () {
+    UnshareSelected();
 });
 $("html").on("keydown", ".file-table", function (e) {
     if (e.ctrlKey) {

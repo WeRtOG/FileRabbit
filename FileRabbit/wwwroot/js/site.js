@@ -1,4 +1,20 @@
-﻿function updateTable(noanim) {
+﻿// Получаем GET-переменные
+var $_GET = {};
+$(function () {
+    $("table .no-data").parent().parent().css("min-height", "100%");
+    document.location.search.replace(/\??(?:([^=]+)=([^&]*)&?)/g, function () {
+        function decode(s) {
+            return decodeURIComponent(s.split("+").join(" "));
+        }
+
+        $_GET[decode(arguments[1])] = decode(arguments[2]);
+    });
+})
+
+// -------------- Необходимые методы ---------------
+
+// Обновление таблицы
+function UpdateTable(noanim) {
     $(".file-bar").load(window.location.href + " .file-table", function () {
         if (!noanim) {
             anix_do($("html").find(".anix"));
@@ -13,6 +29,7 @@
         }
     });
 }
+// Загрузка файлов
 function Upload(files, folderId, token) {
     const formData = new FormData();
 
@@ -49,38 +66,7 @@ function Upload(files, folderId, token) {
         }
     });
 }
-$(".file-bar").on("dragover", function (event) {
-    event.preventDefault();
-    event.stopPropagation();
-    $(".file-bar").addClass("drop");
-});
-$(".file-bar").on("dragleave", function (event) {
-    if (event.target.className == "file-bar drop") {
-        $(".file-bar").removeClass("drop");
-    }
-    event.preventDefault();
-    event.stopPropagation();
-    
-});
-
-$(".file-bar").on("drop", function (e) {
-    $(".file-bar").removeClass("drop");
-    console.log('File(s) dropped');
-
-    // Prevent default behavior (Prevent file from being opened)
-    e.preventDefault();
-
-    if (e.originalEvent.dataTransfer && e.originalEvent.dataTransfer.files.length) {
-        e.preventDefault();
-        e.stopPropagation();
-        /*UPLOAD FILES HERE*/
-        Upload(e.originalEvent.dataTransfer.files, $("form.addfolder [name=folderId]").val(), $("form.addfolder [name=__RequestVerificationToken]").val());
-    }
-});
-$('form.addfolder').ajaxForm(function (response) {
-    updateTable();
-    $("#folderCreate").modal("hide");
-});
+// Метод для события перед загрузкой файла(-ов)
 function UploadBeforeSubmit() {
     $("html").append('<div class="progress-bar-window hide"><div class="info"></div><div class="bar"><div class="item"></div></div></div>');
     setTimeout(function () {
@@ -88,6 +74,7 @@ function UploadBeforeSubmit() {
     }, 20);
     $("#fileUpload").modal("hide");
 }
+// Метод для события изменения прогресса загрузки файла
 function UploadProgress(percentComplete) {
     if (percentComplete == 100) {
         text = "Processing in progress...";
@@ -97,39 +84,15 @@ function UploadProgress(percentComplete) {
     $("html").find(".progress-bar-window .info").text(text);
     $("html").find(".progress-bar-window .item").width(percentComplete + "%");
 }
+// Метод для события завершения загрузки файла
 function UploadSuccess() {
-    updateTable();
+    UpdateTable();
     $("html").find(".progress-bar-window").addClass("hide");
     setTimeout(function () {
         $("html").find(".progress-bar-window").detach();
     }, 300);
 }
-$('form.upload').ajaxForm({
-    beforeSubmit: function () {
-        UploadBeforeSubmit();
-    },
-    uploadProgress: function (event, position, total, percentComplete) {
-        UploadProgress(percentComplete);
-    }, 
-    success: function(response) {
-        UploadSuccess();
-    }
-});
-$('form.renameitem').ajaxForm(function (response) {
-    updateTable();
-    $("#renameWindow").modal("hide");
-});
-var $_GET = {};
-$(function () {
-    $("table .no-data").parent().parent().css("min-height", "100%");
-    document.location.search.replace(/\??(?:([^=]+)=([^&]*)&?)/g, function () {
-        function decode(s) {
-            return decodeURIComponent(s.split("+").join(" "));
-        }
-
-        $_GET[decode(arguments[1])] = decode(arguments[2]);
-    });
-})
+// Метод для логики экшн бара
 function ActionBarLogic() {
     var count = $(".file-table tr.selected").length;
     var sharedcount = $('.file-table tr.selected[data-isshared=True]').length;
@@ -158,12 +121,7 @@ function ActionBarLogic() {
         $(".actions .unshare").removeClass("active");
     }
 }
-//[{"id":"21ac6039-8ee7-4c32-a894-8ac6e2178f01","isFolder":false,"type":1,"elemName":"Компьютерная графика.docx","lastModified":"05.11.2019","size":{"item1":225.4,"item2":1}}]
-$("html").on("click", ".file-table tr.drive-row", function () {
-    $(this).toggleClass("selected");
-
-    ActionBarLogic();
-});
+// Метод для расшаривания выбранных файлов
 function ShareSelected() {
     var foldersId = [];
     $(".file-table tr.drive-row.selected[data-isfolder=True]").each(function () {
@@ -184,10 +142,11 @@ function ShareSelected() {
         success: function (response) {
             var url = "https://localhost:44350/Folder/Watch?folderId=" + response;
             bootbox.alert('Your link is ready:<br><input value="' + url + '"/>');
-            updateTable(true);
+            UpdateTable(true);
         }
     });
 }
+// Метод для удаления выбранных файлов
 function DeleteSelected() {
     var count = $(".file-table tr.selected").length;
     if (count == 0) return;
@@ -220,7 +179,7 @@ function DeleteSelected() {
 
                     traditional: true,
                     success: function (response) {
-                        updateTable();
+                        UpdateTable();
                         ActionBarLogic();
                     }
                 });
@@ -228,6 +187,7 @@ function DeleteSelected() {
         }
     });
 }
+// Метод для отмены расшаривания для выбранных файлов
 function UnshareSelected() {
     var count = $(".file-table tr.selected[data-isshared=True]").length;
     if (count == 0) return;
@@ -260,7 +220,7 @@ function UnshareSelected() {
 
                     traditional: true,
                     success: function (response) {
-                        updateTable();
+                        UpdateTable();
                         ActionBarLogic();
                     }
                 });
@@ -268,12 +228,7 @@ function UnshareSelected() {
         }
     });
 }
-$("html").on("click", ".action-bar .delete.active", function () {
-    DeleteSelected();
-});
-$("html").on("click", ".action-bar .share.active", function () {
-    ShareSelected();
-});
+// Метод для загрузки выбранных файлов
 function DownloadSelected() {
     var foldersId = [];
     $(".file-table tr.drive-row.selected[data-isfolder=True]").each(function () {
@@ -299,6 +254,77 @@ function DownloadSelected() {
     //alert(location.protocol + '//' + location.host + '/Folder/DownloadMultiple' + request_params);
     window.location.href = location.protocol + '//' + location.host + '/Folder/DownloadMultiple' + request_params;
 }
+
+// -------------- Необходимые методы ---------------
+
+// --------------- Обработка событий ---------------
+
+// Событие наведения файла
+$(".file-bar").on("dragover", function (event) {
+    event.preventDefault();
+    event.stopPropagation();
+    $(".file-bar").addClass("drop");
+});
+// Событие отмены наведения файла
+$(".file-bar").on("dragleave", function (event) {
+    if (event.target.className == "file-bar drop") {
+        $(".file-bar").removeClass("drop");
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    
+});
+// Событие дропа
+$(".file-bar").on("drop", function (e) {
+    $(".file-bar").removeClass("drop");
+    console.log('File(s) dropped');
+
+    // Prevent default behavior (Prevent file from being opened)
+    e.preventDefault();
+
+    if (e.originalEvent.dataTransfer && e.originalEvent.dataTransfer.files.length) {
+        e.preventDefault();
+        e.stopPropagation();
+        /*UPLOAD FILES HERE*/
+        Upload(e.originalEvent.dataTransfer.files, $("form.addfolder [name=folderId]").val(), $("form.addfolder [name=__RequestVerificationToken]").val());
+    }
+});
+// Событие отправки формы добавления папки
+$('form.addfolder').ajaxForm(function (response) {
+    UpdateTable();
+    $("#folderCreate").modal("hide");
+});
+// Событие отправки формы загрузки
+$('form.upload').ajaxForm({
+    beforeSubmit: function () {
+        UploadBeforeSubmit();
+    },
+    uploadProgress: function (event, position, total, percentComplete) {
+        UploadProgress(percentComplete);
+    }, 
+    success: function(response) {
+        UploadSuccess();
+    }
+});
+// Событие отправки формы переименования
+$('form.renameitem').ajaxForm(function (response) {
+    UpdateTable();
+    $("#renameWindow").modal("hide");
+});
+// Событие нажатия на объект таблицы файлов
+$("html").on("click", ".file-table tr.drive-row", function () {
+    $(this).toggleClass("selected");
+    ActionBarLogic();
+});
+// Событие нажатия на кнопку удаления в экшн баре
+$("html").on("click", ".action-bar .delete.active", function () {
+    DeleteSelected();
+});
+// Событие нажатия на кнопку расшаривания в экшн баре
+$("html").on("click", ".action-bar .share.active", function () {
+    ShareSelected();
+});
+// Событие нажатия на кнопку загрузки в экшн баре
 $("html").on("click", ".action-bar .download.active, [data-action=download]", function () {
     var count = $(".file-table tr.selected").length;
 
@@ -314,6 +340,7 @@ $("html").on("click", ".action-bar .download.active, [data-action=download]", fu
         DownloadSelected();
     }
 });
+// Событие нажатия на кнопку отмены расшаривания в экшн баре
 $("html").on("click", ".action-bar .unshare.active", function () {
     UnshareSelected();
 });
@@ -330,6 +357,7 @@ $("html").on("keydown", ".file-table", function (e) {
         DeleteSelected();
     }
 });
+// Событие дабл клика на объект таблицы файлов
 $("html").on("dblclick", ".file-table tr.drive-row", function () {
     $("html").find(".file-table tr.selected").removeClass("selected");
     $(this).addClass("selected");
@@ -374,10 +402,12 @@ $("html").on("dblclick", ".file-table tr.drive-row", function () {
         }, 10);
     }
 });
+// Событие нажатия на кнопку закрытия просмотра файла
 $("html").on("click", ".file-view .close-button", function () {
     $("html").find(".file-view").addClass("hide");
     setTimeout(function () {
         $("html").find(".file-view").detach();
     }, 300);
 });
-//alert(1);
+
+// --------------- Обработка событий ---------------
